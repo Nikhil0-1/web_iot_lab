@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFID Door Access — Tech IoT Warriors</title>
+  <meta name="description" content="Secure digital keypad and RFID solenoid door access controller with brute-force rate limiting.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-door-access">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 27 &middot; RFID Door Access</div>
+          <div class="brand-subtitle">Digital Keypad &middot; Solenoid Lock Actuator &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Animated Door Mechanism & Digital Keypad -->
+    <div class="left-panel">
+      <div class="card door-stage-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Security Access Portal</span>
+            <div class="meta-text" id="lock-state-sub">Relay Driver &middot; High-Security Electronic Bolt</div>
+          </div>
+          <span class="badge" id="lock-status-badge" style="background:#ffe4e6;color:#be123c;">Locked</span>
+        </div>
+
+        <!-- Lock Visual Mechanism & Interactive Keypad Layout -->
+        <div class="door-interactive-stage">
+          <!-- Animated Door & Solenoid Graphic -->
+          <div class="door-frame">
+            <div class="door-panel" id="door-panel">
+              <div class="door-handle"></div>
+              <div class="solenoid-bolt-wrap">
+                <div class="solenoid-bolt" id="solenoid-bolt"></div>
+              </div>
+            </div>
+            <div class="lock-indicator-lamp" id="lock-lamp"></div>
+          </div>
+
+          <!-- Digital Keypad Terminal -->
+          <div class="keypad-terminal">
+            <div class="keypad-display">
+              <div class="pin-dots" id="pin-dots">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+              <div class="pin-feedback" id="pin-feedback">ENTER 4-DIGIT PIN</div>
+            </div>
+
+            <div class="keypad-grid">
+              <button class="key-btn" onclick="pressKey('1')">1</button>
+              <button class="key-btn" onclick="pressKey('2')">2</button>
+              <button class="key-btn" onclick="pressKey('3')">3</button>
+              <button class="key-btn" onclick="pressKey('4')">4</button>
+              <button class="key-btn" onclick="pressKey('5')">5</button>
+              <button class="key-btn" onclick="pressKey('6')">6</button>
+              <button class="key-btn" onclick="pressKey('7')">7</button>
+              <button class="key-btn" onclick="pressKey('8')">8</button>
+              <button class="key-btn" onclick="pressKey('9')">9</button>
+              <button class="key-btn key-action" onclick="clearPin()">C</button>
+              <button class="key-btn" onclick="pressKey('0')">0</button>
+              <button class="key-btn key-enter" onclick="submitPin()">↵</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Demo Controls -->
+        <div class="access-demo-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Demo Shortcuts:</span>
+          <button class="btn btn-sm btn-subtle" onclick="enterDemoPin('1234')">Quick PIN (1234)</button>
+          <button class="btn btn-sm btn-subtle" onclick="enterDemoPin('9999')">Wrong PIN (9999)</button>
+          <button class="btn btn-sm btn-subtle" onclick="forceLockToggle()">Emergency Override</button>
+        </div>
+      </div>
+
+      <!-- Access Audit Event Log -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Security Access Audit Log</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearAuditLog()">Clear</button>
+        </div>
+        <div id="audit-list" class="event-list" style="max-height:220px;overflow-y:auto;margin-top:10px;">
+          <div class="event-empty">No access attempts recorded.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Security Configurations & Hardware Link -->
+    <div class="right-panel">
+      <!-- Config Card -->
+      <div class="card">
+        <span class="card-title">Security Parameters</span>
+        <div style="margin-top:12px;font-size:0.875rem;">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-subtle);">
+            <span style="color:var(--text-secondary);">Demo Valid PIN</span>
+            <span class="badge" style="background:#e0f2fe;color:#0369a1;font-family:monospace;">1234</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-subtle);">
+            <span style="color:var(--text-secondary);">Max Failed Attempts</span>
+            <strong>3 Tries</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-subtle);">
+            <span style="color:var(--text-secondary);">Failed Attempts Count</span>
+            <strong id="failed-count" style="color:#e11d48;">0 / 3</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;">
+            <span style="color:var(--text-secondary);">Auto-Relock Delay</span>
+            <strong>4.0 Seconds</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Link Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 Access Controller</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 27: Door Access Controller</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, 12V Solenoid Bolt, 1-Channel Optoisolated Relay Module, 1N4007 Diode, Buzzer.</p>
+        <p><strong>Connections:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>Relay IN &rarr; D1 (GPIO 5)</li>
+          <li>Status LED &rarr; D2 (GPIO 4)</li>
+          <li>Buzzer Alert &rarr; D8 (GPIO 15)</li>
+          <li>Solenoid Power &rarr; External 12V 1A DC adapter</li>
+          <li><strong>Protection:</strong> Connect 1N4007 diode in reverse across solenoid coil terminals to suppress inductive flyback voltage spikes.</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/door_access.ino</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

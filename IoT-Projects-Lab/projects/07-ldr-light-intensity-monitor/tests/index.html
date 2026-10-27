@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unit Tests — Project 03 LDR Light Intensity Monitor</title>
+  <link rel="stylesheet" href="../../../shared/css/design-system.css">
+  <style>
+    body { padding: 30px; }
+    .test-suite { max-width: 800px; margin: 0 auto; }
+    .test-result { padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 8px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; justify-content: space-between; }
+    .test-pass { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .test-fail { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+  </style>
+</head>
+<body>
+  <div class="test-suite">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+      <h2 style="font-size: 1.4rem;">Project 03: LDR Light Tests</h2>
+      <a href="../index.html" class="btn btn-sm">Return to Dashboard</a>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <script src="../../../shared/js/utilities.js"></script>
+  <script src="../../../shared/js/simulation-utils.js"></script>
+  <script src="../../../shared/js/networking.js"></script>
+  <script src="../config/config.js"></script>
+  <script src="../js/simulation.js"></script>
+  <script src="../js/hardware.js"></script>
+  <script>
+    const resultsContainer = document.getElementById('results');
+    let passed = 0, failed = 0;
+
+    function assert(name, condition, details = '') {
+      const el = document.createElement('div');
+      if (condition) {
+        passed++;
+        el.className = 'test-result test-pass';
+        el.innerHTML = `<span>✓ ${name}</span><span>PASSED</span>`;
+      } else {
+        failed++;
+        el.className = 'test-result test-fail';
+        el.innerHTML = `<span>✗ ${name} (${details})</span><span>FAILED</span>`;
+      }
+      resultsContainer.appendChild(el);
+    }
+
+    assert('Config loaded with correct Project ID', window.LdrConfig && window.LdrConfig.projectId === 'ldr-light-intensity-monitor');
+    assert('Threshold ranges valid', window.LdrConfig.thresholds.indoorMax > window.LdrConfig.thresholds.dimMax);
+
+    const sim = new LdrSimulation(window.LdrConfig);
+    sim.setScenario('dark');
+    const darkStep = sim.generateStep('dark', 1);
+    assert('Dark scenario returns low percentage', darkStep.readings.lightPercent < 20);
+
+    sim.setScenario('sunlight');
+    sim.setManualPercent(92);
+    const sunStep = sim.generateStep('sunlight', 2);
+    assert('Sunlight scenario yields Bright Sunlight tier', sunStep.readings.ambientTier === 'Bright Sunlight');
+
+    sim.setScenario('fault');
+    const faultStep = sim.generateStep('fault', 3);
+    assert('Fault scenario returns sensorStatus fault', faultStep.sensorStatus === 'fault');
+
+    // Hardware parsing check
+    let parsed = null;
+    const hw = new LdrHardware(window.LdrConfig, (d) => { parsed = d; });
+    hw.handleData({
+      deviceId: 'esp8266-ldr-01',
+      projectId: 'ldr-light-intensity-monitor',
+      timestamp: 1000,
+      sensorStatus: 'ok',
+      readings: { rawAdc: 512 }
+    });
+    assert('Hardware adapter computes light percent from ADC', parsed && Math.abs(parsed.readings.lightPercent - 50.0) < 1.0);
+
+    const summary = document.createElement('div');
+    summary.style.marginTop = '20px';
+    summary.style.fontWeight = '700';
+    summary.textContent = `Completed: ${passed} passed, ${failed} failed.`;
+    resultsContainer.appendChild(summary);
+  </script>
+</body>
+</html>

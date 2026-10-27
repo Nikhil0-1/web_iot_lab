@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 01 · TERRASCAN X ELITE — Tech IoT Warriors</title>
+  <meta name="description" content="Ultrasonic radar scanning and obstacle proximity detection instrument with ESP8266 and HC-SR04.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-radar">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Return to Laboratory Hub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </a>
+        <div>
+          <div>Project 01 &middot; TERRASCAN X ELITE</div>
+          <div class="brand-subtitle">Ultrasonic Radar &middot; HC-SR04 Transceiver &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Sensor (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn">Hardware</button>
+        </div>
+        <div id="sensor-health-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span>Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-setup-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container radar-layout">
+
+    <!-- LEFT COLUMN: Radar Scope & Primary HUD Metrics -->
+    <div class="scope-card">
+      <div class="scope-header">
+        <div class="scope-title">
+          <span class="live-dot"></span>
+          Ultrasonic Radar Sweep
+        </div>
+        <span style="font-size:0.75rem; color:#64748b; font-weight:600;">180° AZIMUTH &middot; 200 CM MAX</span>
+      </div>
+
+      <!-- Radar Canvas -->
+      <div class="scope-canvas-container">
+        <canvas id="radarCanvas"></canvas>
+      </div>
+
+      <!-- Live Radar HUD Metrics -->
+      <div class="radar-metrics-row">
+        <div class="radar-stat-box">
+          <div class="radar-stat-label">Object Distance</div>
+          <div class="radar-stat-val"><span id="val-distance">120.0</span><span class="radar-stat-unit">cm</span></div>
+        </div>
+        <div class="radar-stat-box">
+          <div class="radar-stat-label">Scan Azimuth</div>
+          <div class="radar-stat-val"><span id="val-angle">90</span><span class="radar-stat-unit">°</span></div>
+        </div>
+        <div class="radar-stat-box">
+          <div class="radar-stat-label">Echo Pulse</div>
+          <div class="radar-stat-val"><span id="val-echo">6980</span><span class="radar-stat-unit">µs</span></div>
+        </div>
+      </div>
+
+      <!-- Dynamic Alert Status Banner -->
+      <div id="radar-alert-banner" class="radar-alert-banner clear">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="radar-alert-text">SECTOR CLEAR — NO OBSTACLES</span>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Simulation Controls, Trends & Connectivity -->
+    <div class="controls-panel">
+
+      <!-- Scenario Presets -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Preset Scenarios</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Quick Simulation</span>
+        </div>
+        <div class="scenario-grid">
+          <button class="scenario-btn" data-scenario="clear">Clear Hallway</button>
+          <button class="scenario-btn active" data-scenario="oscillating">Oscillating</button>
+          <button class="scenario-btn" data-scenario="approaching">Approaching</button>
+          <button class="scenario-btn" data-scenario="collision">Collision Risk</button>
+        </div>
+
+        <!-- Manual Sliders -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Manual Distance</span>
+            <span id="lbl-slider-dist">120 cm</span>
+          </div>
+          <input type="range" id="slider-distance" class="control-slider" min="2" max="300" value="120">
+        </div>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Warning Threshold</span>
+            <span id="lbl-slider-thresh">30 cm</span>
+          </div>
+          <input type="range" id="slider-threshold" class="control-slider" min="10" max="100" value="30">
+        </div>
+
+        <!-- Simulation Actions -->
+        <div class="sim-actions">
+          <button id="btn-pause" class="btn btn-sm btn-subtle">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="6" y="4" width="4" height="16"></rect>
+              <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>
+            Pause
+          </button>
+          <button id="btn-reset" class="btn btn-sm btn-subtle">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Distance Trend Chart -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Distance History (Last 40 Points)</span>
+          <button id="btn-export-csv" class="btn btn-xs btn-subtle" title="Download CSV">Export CSV</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="historyCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Hardware Integration Card (hidden during sim) -->
+      <div id="hw-connection-panel" class="panel-card" style="display:none;">
+        <div class="panel-title">
+          <span>ESP8266 Live Connection</span>
+          <span id="hw-status-text" style="font-size:0.75rem; color:var(--text-muted);">Standby</span>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <input type="text" id="device-ip-input" class="search-input" style="flex:1;" placeholder="http://192.168.1.50" value="http://192.168.4.1">
+          <button id="btn-connect-hw" class="btn btn-primary btn-sm">Connect</button>
+        </div>
+        <p style="font-size:0.78rem; color:var(--text-secondary); margin:0;">
+          Ensure your computer/phone is on the same local network or connected to the ESP8266 Access Point.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal Dialog -->
+  <div id="hw-setup-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Hardware Setup &amp; Wiring: TERRASCAN X ELITE</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <div class="modal-body" style="font-size:0.875rem; line-height:1.6; color:var(--text-secondary);">
+        <p><strong>Required Components:</strong> ESP8266 NodeMCU, HC-SR04 Ultrasonic Distance Sensor, 1kΩ and 2kΩ resistors (for 5V Echo to 3.3V GPIO level shifting), Breadboard &amp; Jumper Wires.</p>
+
+        <h4 style="margin:16px 0 8px 0; color:var(--text-main);">Pinout Wiring Table</h4>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:16px; font-size:0.82rem;">
+          <thead>
+            <tr style="background:#f1f5f9; text-align:left;">
+              <th style="padding:8px; border:1px solid #cbd5e1;">HC-SR04 Pin</th>
+              <th style="padding:8px; border:1px solid #cbd5e1;">ESP8266 Pin</th>
+              <th style="padding:8px; border:1px solid #cbd5e1;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">VCC</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">VIN (5V)</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">Sensor 5V power supply</td>
+            </tr>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">GND</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">GND</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">Common ground</td>
+            </tr>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">TRIG</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">D1 (GPIO5)</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">10µs ultrasonic trigger pulse</td>
+            </tr>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">ECHO</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">D2 (GPIO4) via divider</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">Echo return pulse (Level-shifted to 3.3V)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 style="margin:16px 0 8px 0; color:var(--text-main);">Flashing Firmware:</h4>
+        <ol style="margin-left:20px;">
+          <li>Open <code>firmware/terrascan_x_elite.ino</code> in Arduino IDE.</li>
+          <li>Install <code>ArduinoJson</code> and ESP8266 board support via Board Manager.</li>
+          <li>Set your Wi-Fi SSID and password in the firmware header.</li>
+          <li>Upload to ESP8266 and open the Serial Monitor (115200 baud) to find the device IP.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" data-modal-close>Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared Scripts -->
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

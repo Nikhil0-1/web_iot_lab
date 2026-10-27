@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 03 · TerraIQ — Tech IoT Warriors</title>
+  <meta name="description" content="Soil moisture monitoring, capacitive calibration, and agricultural telemetry with ESP8266.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-terra">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Return to Laboratory Hub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </a>
+        <div>
+          <div>Project 03 &middot; TerraIQ</div>
+          <div class="brand-subtitle">Soil Moisture Monitor &middot; Capacitive Probe &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Sensor (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn">Hardware</button>
+        </div>
+        <div id="sensor-health-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span>Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-setup-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container terra-layout">
+
+    <!-- LEFT COLUMN: Soil Column Visualizer & HUD -->
+    <div class="soil-stage-card">
+      <div class="soil-header">
+        <div class="soil-title">
+          <span class="live-dot" style="background:#10b981;"></span>
+          Soil Hydration Column
+        </div>
+        <span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">CAPACITIVE STRATIFICATION</span>
+      </div>
+
+      <!-- Soil Visual Profile -->
+      <div class="soil-visual-container">
+        <div class="soil-column-wrapper">
+          <div class="soil-strata-lines"></div>
+          <div id="soilMoistureLevel" class="soil-moisture-level"></div>
+          <div class="soil-probe-graphic">
+            <div style="width:12px; height:8px; background:#475569; border-radius:2px;"></div>
+            <div class="soil-probe-track"></div>
+          </div>
+        </div>
+
+        <div class="soil-info-panel">
+          <div id="hydration-pill" class="hydration-pill optimal">OPTIMAL HYDRATION</div>
+          <div style="font-size:0.8rem; color:#94a3b8; line-height:1.5;">
+            Moisture penetration reaches root depth. Transpiration and osmotic pressure are within target agronomic range.
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="terra-metrics-row">
+        <div class="terra-stat-box">
+          <div class="terra-stat-label">Moisture Pct</div>
+          <div class="terra-stat-val"><span id="val-moisture">52.0</span><span class="terra-stat-unit">%</span></div>
+        </div>
+        <div class="terra-stat-box">
+          <div class="terra-stat-label">Raw ADC (A0)</div>
+          <div class="terra-stat-val"><span id="val-adc">605</span><span class="terra-stat-unit">raw</span></div>
+        </div>
+        <div class="terra-stat-box">
+          <div class="terra-stat-label">Probe Voltage</div>
+          <div class="terra-stat-val"><span id="val-voltage">1.95</span><span class="terra-stat-unit">V</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Simulation Controls, Trends & Connectivity -->
+    <div class="controls-panel">
+
+      <!-- Preset Scenarios -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Soil Hydration Scenarios</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Presets</span>
+        </div>
+        <div class="scenario-grid">
+          <button class="scenario-btn" data-scenario="arid">Parched / Arid</button>
+          <button class="scenario-btn active" data-scenario="optimal">Optimal Nursery</button>
+          <button class="scenario-btn" data-scenario="saturated">Saturated Bog</button>
+          <button class="scenario-btn" data-scenario="drying">Evaporation Cycle</button>
+        </div>
+
+        <!-- Sliders -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Manual Moisture %</span>
+            <span id="lbl-slider-moisture">52%</span>
+          </div>
+          <input type="range" id="slider-moisture" class="control-slider" min="0" max="100" value="52">
+        </div>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Dry Alert Threshold</span>
+            <span id="lbl-slider-thresh">30%</span>
+          </div>
+          <input type="range" id="slider-threshold" class="control-slider" min="10" max="60" value="30">
+        </div>
+
+        <div class="sim-actions">
+          <button id="btn-pause" class="btn btn-sm btn-subtle">Pause</button>
+          <button id="btn-reset" class="btn btn-sm btn-subtle">Reset</button>
+        </div>
+      </div>
+
+      <!-- Trend Chart -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Soil Moisture History</span>
+          <button id="btn-export-csv" class="btn btn-xs btn-subtle">Export CSV</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="historyCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Hardware Integration Card -->
+      <div id="hw-connection-panel" class="panel-card" style="display:none;">
+        <div class="panel-title">
+          <span>ESP8266 Live Connection</span>
+          <span id="hw-status-text" style="font-size:0.75rem; color:var(--text-muted);">Standby</span>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <input type="text" id="device-ip-input" class="search-input" style="flex:1;" placeholder="http://192.168.4.1" value="http://192.168.4.1">
+          <button id="btn-connect-hw" class="btn btn-primary btn-sm">Connect</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Setup Modal Dialog -->
+  <div id="hw-setup-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Hardware Setup: TerraIQ</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <div class="modal-body" style="font-size:0.875rem; line-height:1.6; color:var(--text-secondary);">
+        <p><strong>Required Hardware:</strong> ESP8266 NodeMCU, Capacitive Soil Moisture Sensor v1.2 (corrosion-resistant), 3.3V power rails.</p>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:16px; font-size:0.82rem;">
+          <thead>
+            <tr style="background:#f1f5f9; text-align:left;">
+              <th style="padding:8px; border:1px solid #cbd5e1;">Sensor Pin</th>
+              <th style="padding:8px; border:1px solid #cbd5e1;">ESP8266 Pin</th>
+              <th style="padding:8px; border:1px solid #cbd5e1;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">VCC</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">3V3</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">3.3V Power</td>
+            </tr>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">GND</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">GND</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">Ground</td>
+            </tr>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">AOUT</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">A0 (TOUT)</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">Analog voltage proportional to dielectric permittivity</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" data-modal-close>Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

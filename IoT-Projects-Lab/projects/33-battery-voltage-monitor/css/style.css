@@ -1,0 +1,111 @@
+/* Battery Voltage Monitor Styles */
+.battery-visual-stage {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 24px;
+  background: radial-gradient(circle at 50% 50%, #14532d 0%, #052e16 100%);
+  padding: 24px;
+  border-radius: var(--radius-md);
+  margin: 14px 0;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.battery-graphic-enclosure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.battery-terminal-top {
+  width: 32px;
+  height: 10px;
+  background: #94a3b8;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.battery-canister {
+  width: 100px;
+  height: 180px;
+  background: #0f172a;
+  border: 4px solid #334155;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.battery-charge-fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s ease;
+}
+
+.battery-charge-fill.low {
+  background: linear-gradient(180deg, #e11d48 0%, #9f1239 100%);
+}
+
+.battery-charge-fill.mid {
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+}
+
+.battery-overlay-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  pointer-events: none;
+}
+
+.charge-pct {
+  font-size: 1.5rem;
+  font-weight: 800;
+  display: block;
+}
+
+.charge-volts {
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.battery-profile-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(4px);
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,0.12);
+  min-width: 220px;
+}
+
+.profile-stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding-bottom: 6px;
+}
+
+.profile-stat-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.stat-lbl {
+  color: #94a3b8;
+}
+
+.stat-val {
+  color: #f8fafc;
+  font-weight: 700;
+}

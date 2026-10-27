@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Notice Board — Tech IoT Warriors</title>
+  <meta name="description" content="Remote wireless digital announcement board with SSD1306 128x64 OLED preview and marquee marquee text scheduling.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-digital-notice">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 35 &middot; Digital Notice Board</div>
+          <div class="brand-subtitle">SSD1306 OLED 128&times;64 &middot; Wireless Marquee &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: High-Fidelity OLED Display Preview -->
+    <div class="left-panel">
+      <!-- OLED Screen Frame -->
+      <div class="card oled-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Live SSD1306 Display Preview</span>
+            <div class="meta-text" id="display-sub">Resolution: 128&times;64 Pixels &middot; Monochrome I&sup2;C</div>
+          </div>
+          <span class="badge" id="marquee-badge" style="background:#cffafe;color:#0e7490;font-weight:700;">Marquee Active</span>
+        </div>
+
+        <!-- Realistic OLED Bezel -->
+        <div class="oled-bezel">
+          <div class="oled-pcb-header">
+            <span class="oled-pin-dot">GND</span>
+            <span class="oled-pin-dot">VCC</span>
+            <span class="oled-pin-dot">SCL</span>
+            <span class="oled-pin-dot">SDA</span>
+          </div>
+          <div class="oled-screen-glass">
+            <canvas id="oled-canvas" width="256" height="128"></canvas>
+          </div>
+          <div class="oled-logo">SSD1306 OLED &middot; 0.96 INCH</div>
+        </div>
+
+        <!-- Message Editor Form -->
+        <div class="notice-editor-pane">
+          <label class="form-label" for="notice-input">Broadcast Announcement Text</label>
+          <div class="input-with-action">
+            <input type="text" id="notice-input" class="text-input" value="TECH IOT WARRIORS: LAB IS ACTIVE TODAY!" placeholder="Type message to broadcast…">
+            <button class="btn btn-primary" onclick="broadcastMessage()">Send to Board</button>
+          </div>
+
+          <div class="editor-controls-row" style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:140px;">
+              <label class="form-label" for="font-size-select">Font Size / Scale</label>
+              <select id="font-size-select" class="text-input" onchange="updateDisplaySettings()">
+                <option value="1">Small (6x8 px font)</option>
+                <option value="2" selected>Medium (12x16 px font)</option>
+                <option value="3">Large (18x24 px font)</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:140px;">
+              <label class="form-label" for="scroll-speed-select">Scroll Speed</label>
+              <select id="scroll-speed-select" class="text-input" onchange="updateDisplaySettings()">
+                <option value="1">Slow (1 px/tick)</option>
+                <option value="2" selected>Normal (2 px/tick)</option>
+                <option value="4">Fast (4 px/tick)</option>
+                <option value="0">Static (No Scroll)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Broadcast History & Hardware Link -->
+    <div class="right-panel">
+      <!-- Hardware Connection Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 OLED Node</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Quick Preset Messages -->
+      <div class="card">
+        <span class="card-title">Quick Notice Presets</span>
+        <div class="btn-group" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+          <button class="btn btn-sm btn-subtle" onclick="applyPreset('FACILITY CLOSED FOR MAINTENANCE')">Facility Maintenance</button>
+          <button class="btn btn-sm btn-subtle" onclick="applyPreset('IoT LAB SESSION AT 02:00 PM')">Lab Session Schedule</button>
+          <button class="btn btn-sm btn-subtle" onclick="applyPreset('FIRE DRILL SCHEDULED TODAY')">Safety Notice</button>
+        </div>
+      </div>
+
+      <!-- Broadcast History -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Broadcast History</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearNoticeHistory()">Clear</button>
+        </div>
+        <div id="notice-history-list" class="event-list" style="max-height:200px;overflow-y:auto;margin-top:10px;">
+          <div class="event-empty">No previous announcements.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 35: Digital Notice Board</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, 0.96" SSD1306 128&times;64 I&sup2;C OLED Display, Passive Piezo Buzzer.</p>
+        <p><strong>I&sup2;C Bus Pinout:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>OLED VCC &rarr; 3.3V NodeMCU</li>
+          <li>OLED GND &rarr; Common GND</li>
+          <li>OLED SCL &rarr; NodeMCU D1 (GPIO 5)</li>
+          <li>OLED SDA &rarr; NodeMCU D2 (GPIO 4)</li>
+          <li>Chime Buzzer &rarr; NodeMCU D5 (GPIO 14) via 2N2222 transistor</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/digital_notice.ino</code> with <code>Adafruit_SSD1306</code> &amp; <code>Adafruit_GFX</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

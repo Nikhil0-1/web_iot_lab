@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Dustbin — Tech IoT Warriors</title>
+  <meta name="description" content="Touchless automated waste bin with IR proximity lid actuation and ultrasonic fill-level telemetry.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-smart-dustbin">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 28 &middot; Smart Dustbin</div>
+          <div class="brand-subtitle">Touchless IR Proximity &middot; Ultrasonic Fill Telemetry &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Animated Dustbin & Fill-Level -->
+    <div class="left-panel">
+      <div class="card dustbin-stage-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Automated Dustbin Simulator</span>
+            <div class="meta-text" id="bin-state-sub">Servo Actuator &middot; 90° Mechanical Flap</div>
+          </div>
+          <span class="badge" id="bin-status-badge" style="background:#ccfbf1;color:#0f766e;">Lid Closed</span>
+        </div>
+
+        <!-- 3D Cutaway Animated Dustbin -->
+        <div class="dustbin-arena">
+          <div class="bin-assembly">
+            <!-- Mechanical Lid -->
+            <div class="bin-lid" id="bin-lid">
+              <div class="bin-handle"></div>
+              <!-- Internal Ultrasonic Sensor -->
+              <div class="bin-sonar-sensor" title="HC-SR04 Depth Sensor"></div>
+            </div>
+
+            <!-- Bin Body with Fill Fill-Level Column -->
+            <div class="bin-canister">
+              <!-- Internal Waste Fill Level -->
+              <div class="waste-fill" id="waste-fill" style="height:35%;"></div>
+              <div class="fill-grid-lines">
+                <span>100% Full</span>
+                <span>75%</span>
+                <span>50%</span>
+                <span>25%</span>
+              </div>
+            </div>
+
+            <!-- Front IR Proximity Sensor & Hand Wave Zone -->
+            <div class="ir-proximity-eye" id="ir-eye" title="TCRT5000 IR Proximity Eye"></div>
+            <div class="hand-wave-graphic" id="hand-graphic">✋ Hand Wave</div>
+          </div>
+        </div>
+
+        <!-- Simulation Controls -->
+        <div class="scenario-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Simulate Actions:</span>
+          <button class="btn btn-sm btn-subtle" onclick="waveHand()">Wave Hand (IR Trigger)</button>
+          <button class="btn btn-sm btn-subtle" onclick="depositWaste()">Deposit Waste (+20%)</button>
+          <button class="btn btn-sm btn-subtle" onclick="emptyDustbin()">Empty Bin</button>
+          <button class="btn btn-sm btn-subtle" onclick="toggleLidManual()">Toggle Lid</button>
+        </div>
+      </div>
+
+      <!-- Telemetry Gauges -->
+      <div class="metric-row">
+        <div class="metric-box">
+          <span class="metric-label">Bin Fill Level</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-fill-pct">35</span>
+            <span class="metric-unit">%</span>
+          </div>
+          <div class="meta-text" id="val-fill-status">Moderate Capacity</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Headroom Depth</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-depth-cm">26</span>
+            <span class="metric-unit">cm</span>
+          </div>
+          <div class="meta-text">Ultrasonic Sonar</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Lid Position</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-lid-angle">0</span>
+            <span class="metric-unit">&deg;</span>
+          </div>
+          <div class="meta-text" id="val-lid-text">Closed (Idle)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Warnings, Logs & Hardware -->
+    <div class="right-panel">
+      <!-- Capacity Warning Card -->
+      <div class="card" id="capacity-warning-card" style="display:none;border-left:4px solid #e11d48;background:#fff1f2;">
+        <span class="card-title" style="color:#be123c;font-size:0.9rem;">Bin Capacity Warning</span>
+        <p style="font-size:0.8rem;color:#9f1239;margin-top:4px;">
+          Waste fill level exceeds 85%. Municipal sanitation collection dispatched.
+        </p>
+      </div>
+
+      <!-- Hardware Link Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 Dustbin Unit</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Sensor Event History -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Bin Interaction History</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list" style="max-height:220px;overflow-y:auto;margin-top:10px;">
+          <div class="event-empty">No sensor interactions logged yet.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 28: Smart Dustbin</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, HC-SR04 Ultrasonic Sonar, TCRT5000 IR Proximity Module, TowerPro SG90 Servo.</p>
+        <p><strong>Connections:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>HC-SR04 Trig &rarr; D1 (GPIO 5)</li>
+          <li>HC-SR04 Echo &rarr; 1kΩ/2kΩ divider &rarr; D2 (GPIO 4)</li>
+          <li>SG90 Servo PWM &rarr; D5 (GPIO 14)</li>
+          <li>IR Proximity Sensor DO &rarr; D6 (GPIO 12)</li>
+          <li>Servo Power &rarr; External 5V Regulated supply</li>
+        </ul>
+        <p><strong>Technical Distinction:</strong> The IR proximity module triggers the touchless hand wave lid opening, while the ultrasonic sensor measures the internal waste volume.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

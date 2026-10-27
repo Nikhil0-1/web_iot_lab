@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Level Monitor — Tech IoT Warriors</title>
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-water-level">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Return to Laboratory Hub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </a>
+        <div>
+          <div>Project 09 &middot; Water Level Monitor</div>
+          <div class="brand-subtitle">HC-SR04 Ultrasonic Hydrostatic Transducer &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Sensor (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn">Hardware</button>
+        </div>
+        <div id="sensor-health-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span>Active</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-setup-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="display: flex; flex-direction: column; gap: 24px; padding-top: 24px; padding-bottom: 48px;">
+
+    <!-- Primary Showcase Stage: Dominant Reservoir Illustration & Editorial Readouts -->
+    <section class="reservoir-stage-card">
+
+      <!-- Physical Reinforced Acrylic Reservoir Assembly -->
+      <div class="reservoir-assembly">
+        <div class="tank-outer-shell">
+          <!-- Sensor Mount Lid with Ultrasonic Transducers -->
+          <div class="sensor-mount-lid">
+            <div class="sensor-transducers">
+              <div class="transducer-circle" title="Sonar Transmitter (Trig D5)"></div>
+              <div class="transducer-circle" title="Sonar Receiver (Echo D6)"></div>
+            </div>
+          </div>
+
+          <!-- Dynamic Wave Fluid Column -->
+          <div id="tank-water-fluid" class="tank-water-fluid">
+            <div class="wave-surface"></div>
+          </div>
+
+          <!-- Sight Glass Graduation Scale -->
+          <div class="tank-ticks">
+            <div>100% (500L)</div>
+            <div>75%</div>
+            <div>50%</div>
+            <div>25%</div>
+            <div>0% (Empty)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Editorial Information & Hierarchy -->
+      <div class="reservoir-editorial-panel">
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">
+            Reservoir Geometry: 500L Capacity &bull; 100cm Depth &bull; HC-SR04 Sonar
+          </span>
+          <div class="reservoir-main-metric">
+            <span id="primary-level-value" class="reservoir-large-num">--</span>
+            <span style="font-size: 2.2rem; font-weight: 800; color: var(--text-muted);">%</span>
+            <span id="stat-liters" class="reservoir-vol-sub">--</span>
+          </div>
+        </div>
+
+        <div>
+          <span id="level-status-pill" class="reservoir-classification-badge status-ok">Normal Capacity</span>
+        </div>
+
+        <!-- Borderless Minimal Telemetry Strip -->
+        <div class="telemetry-strip">
+          <div class="telemetry-item">
+            <span class="telemetry-label">Water Depth</span>
+            <span id="stat-depth" class="telemetry-val">--</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Acoustic Air Gap</span>
+            <span id="stat-distance" class="telemetry-val">--</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Low Level Alarm</span>
+            <span class="telemetry-val" style="font-size: 1.05rem; color: #0284c7;">Armed (&lt;20%)</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">Echo Reliability</span>
+            <div id="reading-validity-pill" class="status-pill status-ok" style="margin-top: 2px;">
+              <span class="pulse-dot"></span><span>Reading Valid</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Scenario Chips -->
+        <div class="scenario-quick-row">
+          <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-right: 4px;">Preset:</span>
+          <button class="scenario-chip active" onclick="document.getElementById('sim-scenario-select').value='nominal'; document.getElementById('sim-scenario-select').dispatchEvent(new Event('change'));">Nominal 65% (325L)</button>
+          <button class="scenario-chip" onclick="document.getElementById('sim-scenario-select').value='full'; document.getElementById('sim-scenario-select').dispatchEvent(new Event('change'));">Full Reservoir 95%</button>
+          <button class="scenario-chip" onclick="document.getElementById('sim-scenario-select').value='empty'; document.getElementById('sim-scenario-select').dispatchEvent(new Event('change'));">Low Reserve 10%</button>
+          <button class="scenario-chip" onclick="document.getElementById('sim-scenario-select').value='fault'; document.getElementById('sim-scenario-select').dispatchEvent(new Event('change'));">Echo Timeout</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-Time Time Series Trend Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          Water Level Trajectory &amp; Historical Trend
+        </span>
+        <button id="btn-export-csv" class="btn btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+      <div class="chart-container">
+        <canvas id="tank-chart"></canvas>
+      </div>
+      <div class="diagnostics-bar" style="margin-top: 14px;">
+        <div>System Status: <span id="diagnostics-msg" style="color: var(--text-main); font-weight: 600;">Active</span></div>
+        <div>Last Packet: <span id="last-updated-text" style="font-family: var(--font-mono); font-weight: 600;">--:--:--</span></div>
+      </div>
+    </div>
+
+    <!-- Compact Instrument Control Deck -->
+    <div class="instrument-deck">
+      <!-- Simulation Controls -->
+      <div id="sim-controls-panel" style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px; width: 100%;">
+        <div style="flex: 1; min-width: 200px;">
+          <label class="input-label" for="sim-scenario-select">Reservoir Scenario</label>
+          <select id="sim-scenario-select" class="input-field" style="width: 100%; margin-top: 4px;">
+            <option value="nominal">Nominal Half Tank (~65% / 325L)</option>
+            <option value="full">Full Capacity (~95% / 475L)</option>
+            <option value="empty">Critical Low / Empty (~8% / 40L)</option>
+            <option value="fault">Echo Timeout / Sonar Occluded</option>
+          </select>
+        </div>
+
+        <div style="flex: 2; min-width: 240px;">
+          <div class="slider-header" style="margin-bottom: 4px;">
+            <span class="input-label">Manual Water Level</span>
+            <span id="slider-val-label" style="font-family: var(--font-mono); font-weight: 700;">65%</span>
+          </div>
+          <input type="range" id="level-override-slider" class="range-input" min="0" max="100" step="1" value="65">
+        </div>
+
+        <div style="min-width: 130px;">
+          <label class="input-label" for="sim-speed-select">Simulation Speed</label>
+          <select id="sim-speed-select" class="input-field" style="width: 100%; margin-top: 4px;">
+            <option value="0.5">0.5x Slow</option>
+            <option value="1.0" selected>1.0x Real-time</option>
+            <option value="2.0">2.0x Fast</option>
+            <option value="5.0">5.0x Turbo</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 8px; align-self: flex-end; padding-bottom: 2px;">
+          <button id="btn-sim-start" class="btn btn-sm btn-primary">Resume</button>
+          <button id="btn-sim-pause" class="btn btn-sm">Pause</button>
+          <button id="btn-sim-reset" class="btn btn-sm btn-subtle">Reset</button>
+        </div>
+      </div>
+
+      <!-- Hardware Controls Panel -->
+      <div id="hw-controls-panel" style="display: none; width: 100%; flex-wrap: wrap; align-items: center; gap: 16px;">
+        <div style="flex: 1; min-width: 240px;">
+          <label class="input-label" for="hw-device-ip">ESP8266 Device IP</label>
+          <input type="text" id="hw-device-ip" class="input-field" value="http://192.168.4.1" placeholder="http://192.168.4.1" style="width: 100%; margin-top: 4px;">
+        </div>
+        <div style="display: flex; gap: 8px; align-self: flex-end;">
+          <button id="btn-test-hw" class="btn btn-sm">Test Link</button>
+          <button id="btn-connect-hw" class="btn btn-sm btn-primary">Connect</button>
+          <button id="btn-disconnect-hw" class="btn btn-sm btn-subtle">Disconnect</button>
+        </div>
+        <div id="hw-test-result" style="width: 100%; font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted);">
+          Awaiting connection test.
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-setup-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">HC-SR04 &amp; ESP8266 Hardware Setup</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+        <h4 style="color: var(--text-main); margin-bottom: 8px;">1. Wiring Connections:</h4>
+        <ul style="margin-left: 20px; margin-bottom: 14px;">
+          <li><strong>VCC:</strong> Connect to 5V external power (HC-SR04 ultrasonic transducer requires 5V).</li>
+          <li><strong>GND:</strong> Connect to common ground with ESP8266.</li>
+          <li><strong>Trigger:</strong> Connect to Pin D5 (GPIO14) on NodeMCU.</li>
+          <li><strong>Echo:</strong> Connect through a 1k&Omega; / 2k&Omega; voltage divider to Pin D6 (GPIO12) to safely step down the 5V echo pulse to 3.3V for ESP8266 input protection.</li>
+        </ul>
+        <h4 style="color: var(--text-main); margin-bottom: 8px;">2. Firmware Upload:</h4>
+        <ol style="margin-left: 20px; margin-bottom: 14px;">
+          <li>Open <code>firmware/water_level_monitor.ino</code> in Arduino IDE.</li>
+          <li>Configure your Wi-Fi SSID and Password in the sketch.</li>
+          <li>Configure tank height parameter (default: 100 cm).</li>
+          <li>Upload to ESP8266 at 115200 baud.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/chart-utils.js"></script>
+  <script src="../../shared/js/simulation-utils.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="config/config.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/hardware.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

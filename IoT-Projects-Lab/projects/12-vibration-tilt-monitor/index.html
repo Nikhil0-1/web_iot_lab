@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibration &amp; Tilt Monitor — Tech IoT Warriors</title>
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-vibration-tilt">
+
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Return to Launcher">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </a>
+        <div>
+          <div>Project 12 &middot; Vibration &amp; Tilt Monitor</div>
+          <div class="brand-subtitle">MPU-6050 6-Axis Inertial Measurement Unit &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch to another sensor (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn">Hardware</button>
+        </div>
+        <div id="sensor-health-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span>Active</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-setup-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero Header Banner -->
+    <div class="hero-banner">
+      <div class="hero-banner-main">
+        <div class="hero-project-badge">📐</div>
+        <div class="hero-title-group">
+          <h1>6-DOF Inertial Attitude &amp; Kinematics Station</h1>
+          <p>
+            <span>MPU-6050 3-Axis Gyroscope + 3-Axis Accelerometer</span>
+            <span>&bull;</span>
+            <span>I2C Bus &bull; Dual-Axis Pitch &amp; Roll Fusion &bull; Total Acceleration (G)</span>
+            <span>&bull;</span>
+            <span style="font-family: var(--font-mono); font-weight: 600;">SDA D2 &bull; SCL D1</span>
+          </p>
+        </div>
+      </div>
+      <div class="hero-metrics-pill">
+        <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Motion State</span>
+        <div style="margin-top: 4px;">
+          <span id="motion-state-pill" class="status-pill status-ok">Stationary / Level</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Instrument Showcase Stage -->
+    <section class="imu-stage-card">
+      <!-- 3D Artificial Horizon Attitude Indicator -->
+      <div class="horizon-visualizer-container">
+        <canvas id="attitude-canvas"></canvas>
+        <div class="attitude-center-reticle"></div>
+        <div id="attitude-info-badge" class="attitude-info-badge">P: 0° | R: 0° | 1.00g</div>
+      </div>
+
+      <!-- Editorial Kinematics Telemetry -->
+      <div class="imu-editorial-panel">
+        
+        <!-- Dual Orientation Readout -->
+        <div class="imu-readouts-dual">
+          <div>
+            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Attitude Pitch (&theta;)</span>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 4px;">
+              <span id="primary-pitch-value" class="imu-large-num">--</span>
+            </div>
+          </div>
+
+          <div>
+            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Attitude Roll (&phi;)</span>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 4px;">
+              <span id="stat-roll" style="font-size: 4.8rem; font-weight: 800; font-family: var(--font-family); color: var(--text-main); line-height: 1;">--</span>
+            </div>
+          </div>
+
+          <div>
+            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Composite Acceleration</span>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 4px;">
+              <span id="stat-gforce" style="font-size: 3rem; font-weight: 800; font-family: var(--font-family); color: var(--text-main); line-height: 1;">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Strip -->
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; padding: 14px 0; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);">
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Sensor Bus</div>
+            <div style="margin-top: 4px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
+              I2C (Address 0x68)
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Inertial Health</div>
+            <div style="margin-top: 4px;">
+              <span id="reading-validity-pill" class="status-pill status-ok">Reading Valid</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Last Reading</div>
+            <div id="last-updated-text" style="margin-top: 4px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
+              --:--:--
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+          <strong>Technical Specification:</strong> MPU-6050 contains a 3-axis MEMS accelerometer and 3-axis rate gyroscope. Sensor fusion uses a complementary filter to suppress high-frequency mechanical vibrations while preventing gyro integration drift.
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-time Chart Card -->
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <span class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          Composite Acceleration Vector (G-Force)
+        </span>
+        <button id="btn-export-csv" class="btn btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+      <div class="chart-container" style="height: 220px;">
+        <canvas id="imu-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Compact Instrument Control Deck -->
+    <div class="instrument-deck" style="margin-top: 24px;">
+      <!-- Simulation Controls Panel -->
+      <div id="sim-controls-panel" style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em;">Inertial Kinematics Simulator</span>
+          <span class="postal-badge">Virtual 6-DOF Engine</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: end;">
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label" for="sim-scenario-select">Motion Scenario</label>
+            <select id="sim-scenario-select" class="input-field">
+              <option value="level" selected>Stationary Level (0° Pitch, 0° Roll, 1.0g)</option>
+              <option value="tilt">45° Severe Tilt Angle</option>
+              <option value="vibration">Motor / Structural Vibration</option>
+              <option value="impact">High-G Transient Impact Shock</option>
+              <option value="fault">I2C NACK / Bus Line Failure</option>
+            </select>
+          </div>
+
+          <div class="slider-control" style="margin-bottom: 0;">
+            <div class="slider-header" style="margin-bottom: 4px;">
+              <span class="input-label" style="margin-bottom: 0;">Manual Pitch</span>
+              <span id="pitch-val-label" style="font-family: var(--font-mono); font-weight: 600; font-size: 0.8rem;">0°</span>
+            </div>
+            <input type="range" id="pitch-override-slider" class="range-input" min="-90" max="90" step="1" value="0">
+          </div>
+
+          <div class="slider-control" style="margin-bottom: 0;">
+            <div class="slider-header" style="margin-bottom: 4px;">
+              <span class="input-label" style="margin-bottom: 0;">Manual Roll</span>
+              <span id="roll-val-label" style="font-family: var(--font-mono); font-weight: 600; font-size: 0.8rem;">0°</span>
+            </div>
+            <input type="range" id="roll-override-slider" class="range-input" min="-180" max="180" step="1" value="0">
+          </div>
+
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label" for="sim-speed-select">Simulation Speed</label>
+            <select id="sim-speed-select" class="input-field">
+              <option value="0.5">0.5x (Slow)</option>
+              <option value="1.0" selected>1.0x (Real-time)</option>
+              <option value="2.0">2.0x (Fast)</option>
+              <option value="5.0">5.0x (High-speed)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-sim-start" class="btn btn-sm btn-primary" style="flex: 1;">Resume</button>
+            <button id="btn-sim-pause" class="btn btn-sm" style="flex: 1;">Pause</button>
+            <button id="btn-sim-reset" class="btn btn-sm btn-subtle">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Controls Panel -->
+      <div id="hw-controls-panel" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); text-transform: uppercase;">ESP8266 REST Hardware Link</span>
+          <span class="postal-badge">Physical Sensor</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; align-items: center;">
+          <input type="text" id="hw-device-ip" class="input-field" value="http://192.168.4.1" placeholder="http://192.168.4.1">
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-test-hw" class="btn btn-sm" style="flex: 1;">Test</button>
+            <button id="btn-connect-hw" class="btn btn-sm btn-primary" style="flex: 1;">Connect</button>
+            <button id="btn-disconnect-hw" class="btn btn-sm btn-subtle">Cut</button>
+          </div>
+          <div id="hw-test-result" style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); text-align: right;">
+            Ready to link.
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnostics Footer Bar -->
+      <div class="diagnostics-bar" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-light);">
+        <div>Diagnostics: <span id="diagnostics-msg" style="color: var(--text-main); font-weight: 600;">MPU-6050 DMP Initialized &bull; Ready</span></div>
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">I2C Address 0x68 &bull; ESP8266 Wire Protocol</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-setup-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">MPU-6050 6-Axis IMU Hardware Setup</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+        <h4 style="color: var(--text-main); margin-bottom: 8px;">1. Wiring Connections:</h4>
+        <ul style="margin-left: 20px; margin-bottom: 14px;">
+          <li><strong>VCC:</strong> Connect to 3.3V on NodeMCU.</li>
+          <li><strong>GND:</strong> Connect to ESP8266 GND.</li>
+          <li><strong>SCL:</strong> Connect to ESP8266 Pin D1 (GPIO5).</li>
+          <li><strong>SDA:</strong> Connect to ESP8266 Pin D2 (GPIO4).</li>
+          <li><strong>AD0:</strong> Connect to GND for I2C Address <code>0x68</code>.</li>
+        </ul>
+        <h4 style="color: var(--text-main); margin-bottom: 8px;">2. Firmware Configuration:</h4>
+        <ol style="margin-left: 20px; margin-bottom: 14px;">
+          <li>Open <code>firmware/vibration_tilt_monitor.ino</code> in Arduino IDE.</li>
+          <li>Include <code>Wire.h</code> and <code>MPU6050_light.h</code>.</li>
+          <li>Flash to ESP8266 NodeMCU at 115200 baud.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/chart-utils.js"></script>
+  <script src="../../shared/js/simulation-utils.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="config/config.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/hardware.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

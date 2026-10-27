@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Greenhouse Automation — Tech IoT Warriors</title>
+  <meta name="description" content="Coordinated climate monitoring, automated irrigation, and ventilation control with ESP8266.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-greenhouse">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 24 &middot; Smart Greenhouse Automation</div>
+          <div class="brand-subtitle">Multi-Sensor Climate Matrix &middot; Coordinated Actuation &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+
+    <!-- LEFT PANEL: Greenhouse Glasshouse Stage & Actuator Cards -->
+    <div class="left-panel">
+      <!-- Glasshouse Stage Card -->
+      <div class="card gh-stage-card">
+        <div class="card-header-row">
+          <span class="card-title">Greenhouse Microclimate</span>
+          <span class="status-pill status-ok" id="gh-status-badge">OPTIMAL</span>
+        </div>
+
+        <div class="gh-scene">
+          <svg id="gh-svg" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky/Sun Background -->
+            <rect x="0" y="0" width="280" height="180" rx="12" fill="#f0fdf4"/>
+            <circle id="sun-orb" cx="240" cy="40" r="24" fill="#fde047" opacity="0.8"/>
+
+            <!-- Glasshouse Outline -->
+            <polygon points="140,25 250,75 250,170 30,170 30,75" fill="none" stroke="#059669" stroke-width="3"/>
+            <polygon points="140,25 250,75 250,170 30,170 30,75" fill="rgba(255,255,255,0.45)"/>
+            <!-- Roof Truss -->
+            <line x1="140" y1="25" x2="140" y2="170" stroke="#a7f3d0" stroke-width="2"/>
+            <line x1="30" y1="75" x2="250" y2="75" stroke="#a7f3d0" stroke-width="2"/>
+
+            <!-- Soil Bed -->
+            <rect x="30" y="145" width="220" height="25" fill="#78350f" rx="3"/>
+            <rect id="soil-moist-overlay" x="30" y="145" width="220" height="25" fill="#3b82f6" opacity="0.3"/>
+
+            <!-- Plants -->
+            <g id="gh-plants">
+              <path d="M70 145 Q65 115 72 95 Q82 115 72 145" fill="#10b981"/>
+              <circle cx="72" cy="90" r="6" fill="#047857"/>
+              <path d="M140 145 Q135 110 142 85 Q152 110 142 145" fill="#10b981"/>
+              <circle cx="142" cy="80" r="7" fill="#047857"/>
+              <path d="M210 145 Q205 115 212 95 Q222 115 212 145" fill="#10b981"/>
+              <circle cx="212" cy="90" r="6" fill="#047857"/>
+            </g>
+
+            <!-- Exhaust Fan Visual (top right) -->
+            <circle cx="225" cy="55" r="14" fill="#0f172a"/>
+            <g id="gh-fan-blades" transform-origin="225 55">
+              <line x1="225" y1="45" x2="225" y2="65" stroke="#38bdf8" stroke-width="3"/>
+              <line x1="215" y1="55" x2="235" y2="55" stroke="#38bdf8" stroke-width="3"/>
+            </g>
+
+            <!-- Irrigation Drip Lines -->
+            <line x1="50" y1="145" x2="230" y2="145" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4" id="drip-line"/>
+          </svg>
+
+          <!-- Live environmental readouts row -->
+          <div class="gh-env-badges">
+            <div class="env-chip"><span class="chip-label">TEMP</span> <strong id="val-temp">24.5 °C</strong></div>
+            <div class="env-chip"><span class="chip-label">HUMIDITY</span> <strong id="val-hum">60 %</strong></div>
+            <div class="env-chip"><span class="chip-label">MOISTURE</span> <strong id="val-moist">48 %</strong></div>
+            <div class="env-chip"><span class="chip-label">SUNLIGHT</span> <strong id="val-lux">850 Lux</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actuator Status Indicators -->
+      <div class="card">
+        <span class="card-title">Automated Actuator Bank</span>
+        <div class="gh-actuator-grid" style="margin-top:14px;">
+          <!-- Ventilation Fan -->
+          <div class="actuator-card" id="act-fan-card">
+            <div class="actuator-icon-wrap" id="act-fan-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 9V3"/><path d="M15 12h6"/><path d="M12 15v6"/><path d="M9 12H3"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:0.9rem;">Exhaust Fan</div>
+              <div class="meta-text" id="act-fan-sub">OFF &middot; Trigger: Temp &gt; 28°C</div>
+            </div>
+            <span class="status-pill status-idle" id="act-fan-pill" style="margin-left:auto;">IDLE</span>
+          </div>
+
+          <!-- Irrigation Pump -->
+          <div class="actuator-card" id="act-pump-card">
+            <div class="actuator-icon-wrap" id="act-pump-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6"/><path d="m4.93 10.93 4.24 4.24"/><path d="M2 18h6"/><path d="M20 18h2"/><path d="m19.07 10.93-4.24 4.24"/><circle cx="12" cy="18" r="4"/></svg>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:0.9rem;">Drip Irrigation Pump</div>
+              <div class="meta-text" id="act-pump-sub">OFF &middot; Trigger: Soil &lt; 35%</div>
+            </div>
+            <span class="status-pill status-idle" id="act-pump-pill" style="margin-left:auto;">IDLE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Environmental Sliders & Thresholds -->
+    <div class="right-panel">
+
+      <!-- Workbench Controls -->
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Environmental Controls</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" id="gh-auto-btn" onclick="setAutoMode(true)">Auto</button>
+            <button class="btn btn-sm btn-subtle" id="gh-man-btn" onclick="setAutoMode(false)">Manual</button>
+          </div>
+        </div>
+
+        <!-- Temperature Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <label class="ctrl-label" for="slider-temp" style="margin-bottom:0;">Temperature</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="disp-temp">24 °C</span>
+          </div>
+          <input type="range" id="slider-temp" class="slider" min="15" max="42" value="24" oninput="onTempSlider(this.value)">
+        </div>
+
+        <!-- Relative Humidity Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <label class="ctrl-label" for="slider-hum" style="margin-bottom:0;">Relative Humidity</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="disp-hum">60 %</span>
+          </div>
+          <input type="range" id="slider-hum" class="slider" min="20" max="95" value="60" oninput="onHumSlider(this.value)">
+        </div>
+
+        <!-- Soil Moisture Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <label class="ctrl-label" for="slider-moist" style="margin-bottom:0;">Soil Moisture</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="disp-moist">48 %</span>
+          </div>
+          <input type="range" id="slider-moist" class="slider" min="5" max="95" value="48" oninput="onMoistSlider(this.value)">
+        </div>
+
+        <!-- Sunlight Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <label class="ctrl-label" for="slider-lux" style="margin-bottom:0;">Sunlight Intensity</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="disp-lux">850 Lux</span>
+          </div>
+          <input type="range" id="slider-lux" class="slider" min="50" max="1500" step="50" value="850" oninput="onLuxSlider(this.value)">
+        </div>
+
+        <!-- Reservoir Dry-Run Safety Switch -->
+        <div class="control-group">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg-card-subtle);border-radius:var(--radius-md);border:1px solid var(--border-card);">
+            <div>
+              <div style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">Water Tank Reservoir Level</div>
+              <div class="meta-text" id="tank-level-sub">Sufficient water in reservoir</div>
+            </div>
+            <label class="relay-sw">
+              <input type="checkbox" id="sw-tank-empty" onchange="toggleTankEmpty(this.checked)">
+              <span class="relay-sw-track"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Manual Actuator Overrides (Manual Mode) -->
+        <div class="control-group" id="manual-controls-group" style="display:none;">
+          <span class="ctrl-label">Manual Actuator Controls</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" id="man-fan-btn" onclick="toggleManualFan()">Toggle Fan</button>
+            <button class="btn btn-sm btn-subtle" id="man-pump-btn" onclick="toggleManualPump()">Toggle Pump</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Link -->
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">ESP8266 Hardware Link</span>
+          <span class="status-pill status-idle" id="hw-conn-status">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label" for="hw-ip">NodeMCU IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Automation History -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Greenhouse Event Log</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list">
+          <div class="event-empty">No automation events recorded.</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup — Project 24: Smart Greenhouse Automation</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, DHT11/22 Temperature & Humidity Sensor, Capacitive Soil Moisture Sensor, LDR Light Sensor, Dual 5V Relay Board (Fan & Pump), Float Switch (Dry-run safety), External 12V / 5V Supplies.</p>
+        <p><strong>GPIO Map:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>DHT DATA &rarr; D4 (GPIO 2) with 10k pull-up to 3.3V</li>
+          <li>Capacitive Soil Sensor &rarr; A0 (ADC 0–1V / 3.3V)</li>
+          <li>Exhaust Fan Relay &rarr; D1 (GPIO 5) — Active LOW</li>
+          <li>Irrigation Pump Relay &rarr; D2 (GPIO 4) — Active LOW</li>
+          <li>Water Reservoir Float Switch &rarr; D5 (GPIO 14) with internal pull-up</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/smart_greenhouse.ino</code> via Arduino IDE.</p>
+        <p><strong>Interlock Protection:</strong> Simulated and hardware irrigation pumps immediately shut down if the water reservoir is reported empty, preventing pump burn-out.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

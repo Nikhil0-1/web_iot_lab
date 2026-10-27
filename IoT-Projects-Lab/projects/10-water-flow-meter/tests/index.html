@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unit Tests — Project 06 Water Flow Meter</title>
+  <link rel="stylesheet" href="../../../shared/css/design-system.css">
+  <style>
+    body { padding: 30px; }
+    .test-suite { max-width: 800px; margin: 0 auto; }
+    .test-result { padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 8px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; justify-content: space-between; }
+    .test-pass { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .test-fail { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+  </style>
+</head>
+<body>
+  <div class="test-suite">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+      <h2 style="font-size: 1.4rem;">Project 06: Water Flow Tests</h2>
+      <a href="../index.html" class="btn btn-sm">Return to Dashboard</a>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <script src="../../../shared/js/utilities.js"></script>
+  <script src="../../../shared/js/simulation-utils.js"></script>
+  <script src="../../../shared/js/networking.js"></script>
+  <script src="../config/config.js"></script>
+  <script src="../js/simulation.js"></script>
+  <script src="../js/hardware.js"></script>
+  <script>
+    const resultsContainer = document.getElementById('results');
+    let passed = 0, failed = 0;
+
+    function assert(name, condition, details = '') {
+      const el = document.createElement('div');
+      if (condition) {
+        passed++;
+        el.className = 'test-result test-pass';
+        el.innerHTML = `<span>✓ ${name}</span><span>PASSED</span>`;
+      } else {
+        failed++;
+        el.className = 'test-result test-fail';
+        el.innerHTML = `<span>✗ ${name} (${details})</span><span>FAILED</span>`;
+      }
+      resultsContainer.appendChild(el);
+    }
+
+    assert('Config loaded with correct Project ID', window.WaterFlowConfig && window.WaterFlowConfig.projectId === 'water-flow-meter');
+    assert('Calibration factor is 7.5 for YF-S201', window.WaterFlowConfig.calibrationFactor === 7.5);
+
+    const sim = new WaterFlowSimulation(window.WaterFlowConfig);
+    sim.setScenario('stagnant');
+    sim.setManualFlow(0);
+    const zeroStep = sim.generateStep('stagnant', 1);
+    assert('Zero flow returns 0 L/min and No Flow state', zeroStep.readings.flowRateLpm === 0 && zeroStep.readings.flowState.includes('No Flow'));
+
+    sim.setScenario('nominal');
+    sim.setManualFlow(10.0);
+    const nominalStep = sim.generateStep('nominal', 2);
+    assert('Nominal flow records positive pulse count and volume accumulation', nominalStep.readings.pulseCount > 0 && nominalStep.readings.totalLiters > 0);
+
+    sim.setScenario('fault');
+    const faultStep = sim.generateStep('fault', 3);
+    assert('Fault scenario returns sensorStatus fault', faultStep.sensorStatus === 'fault');
+
+    // Hardware parsing check
+    let parsed = null;
+    const hw = new WaterFlowHardware(window.WaterFlowConfig, (d) => { parsed = d; });
+    hw.handleData({
+      deviceId: 'esp8266-flow-01',
+      projectId: 'water-flow-meter',
+      timestamp: 1000,
+      sensorStatus: 'ok',
+      readings: { flowRateLpm: 6.4, totalLiters: 12.8, pulseCount: 5760 }
+    });
+    assert('Hardware adapter parses flow rate and total volume', parsed && parsed.readings.flowRateLpm === 6.4 && parsed.readings.totalLiters === 12.8);
+
+    const summary = document.createElement('div');
+    summary.style.marginTop = '20px';
+    summary.style.fontWeight = '700';
+    summary.textContent = `Completed: ${passed} passed, ${failed} failed.`;
+    resultsContainer.appendChild(summary);
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unit Tests — Project 05 Water Level Monitor</title>
+  <link rel="stylesheet" href="../../../shared/css/design-system.css">
+  <style>
+    body { padding: 30px; }
+    .test-suite { max-width: 800px; margin: 0 auto; }
+    .test-result { padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 8px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; justify-content: space-between; }
+    .test-pass { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .test-fail { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+  </style>
+</head>
+<body>
+  <div class="test-suite">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+      <h2 style="font-size: 1.4rem;">Project 05: Water Level Tests</h2>
+      <a href="../index.html" class="btn btn-sm">Return to Dashboard</a>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <script src="../../../shared/js/utilities.js"></script>
+  <script src="../../../shared/js/simulation-utils.js"></script>
+  <script src="../../../shared/js/networking.js"></script>
+  <script src="../config/config.js"></script>
+  <script src="../js/simulation.js"></script>
+  <script src="../js/hardware.js"></script>
+  <script>
+    const resultsContainer = document.getElementById('results');
+    let passed = 0, failed = 0;
+
+    function assert(name, condition, details = '') {
+      const el = document.createElement('div');
+      if (condition) {
+        passed++;
+        el.className = 'test-result test-pass';
+        el.innerHTML = `<span>✓ ${name}</span><span>PASSED</span>`;
+      } else {
+        failed++;
+        el.className = 'test-result test-fail';
+        el.innerHTML = `<span>✗ ${name} (${details})</span><span>FAILED</span>`;
+      }
+      resultsContainer.appendChild(el);
+    }
+
+    assert('Config loaded with correct Project ID', window.WaterLevelConfig && window.WaterLevelConfig.projectId === 'water-level-monitor');
+    assert('Tank geometry properly configured', window.WaterLevelConfig.tank.heightCm === 100.0);
+
+    const sim = new WaterLevelSimulation(window.WaterLevelConfig);
+    sim.setScenario('half');
+    sim.setManualPercent(50);
+    const halfStep = sim.generateStep('half', 1);
+    assert('50% level calculates 250 Litres in 500L tank', Math.abs(halfStep.readings.liters - 250.0) < 5.0);
+
+    sim.setScenario('fault');
+    const faultStep = sim.generateStep('fault', 2);
+    assert('Echo fault returns null readings and fault status', faultStep.sensorStatus === 'fault');
+
+    // Hardware parsing check
+    let parsed = null;
+    const hw = new WaterLevelHardware(window.WaterLevelConfig, (d) => { parsed = d; });
+    hw.handleData({
+      deviceId: 'esp8266-level-01',
+      projectId: 'water-level-monitor',
+      timestamp: 1000,
+      sensorStatus: 'ok',
+      readings: { distanceCm: 20.0 }
+    });
+    // In a 100cm tank, 20cm distance means 80cm depth = 80% full
+    assert('Hardware adapter computes 80% fill from 20cm distance', parsed && Math.abs(parsed.readings.fillPercent - 80.0) < 1.0);
+
+    const summary = document.createElement('div');
+    summary.style.marginTop = '20px';
+    summary.style.fontWeight = '700';
+    summary.textContent = `Completed: ${passed} passed, ${failed} failed.`;
+    resultsContainer.appendChild(summary);
+  </script>
+</body>
+</html>

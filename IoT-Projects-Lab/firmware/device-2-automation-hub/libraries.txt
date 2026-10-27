@@ -1,0 +1,10 @@
+# Tech IoT Warriors — Device 2: Automation Hub
+# Required Arduino IDE Libraries:
+# Install these via Arduino IDE Library Manager (Sketch -> Include Library -> Manage Libraries...)
+
+ArduinoJson by Benoit Blanchon (Version 6.21.3 or higher)
+Servo (Built-in with ESP8266 Core)
+Wire (Built-in with ESP8266 Core)
+ESP8266WiFi (Built-in with ESP8266 Core)
+ESP8266WebServer (Built-in with ESP8266 Core)
+ESP8266mDNS (Built-in with ESP8266 Core)

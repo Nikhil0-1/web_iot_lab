@@ -1,0 +1,328 @@
+/* ==========================================================================
+   TerraIQ — Soil Moisture Monitoring Stylesheet
+   ========================================================================== */
+
+:root {
+  --terra-primary: #059669;
+  --terra-accent: #10b981;
+  --terra-soil-dry: #d97706;
+  --terra-soil-wet: #0284c7;
+  --terra-bg: #091711;
+}
+
+.theme-terra {
+  --primary-color: #059669;
+  --accent-color: #10b981;
+}
+
+.terra-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+  margin-bottom: 48px;
+}
+
+@media (max-width: 992px) {
+  .terra-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Soil Stage Card */
+.soil-stage-card {
+  background: var(--terra-bg);
+  border-radius: var(--radius-lg, 16px);
+  padding: 24px;
+  color: #f8fafc;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.soil-stage-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #059669, #10b981, #0284c7);
+}
+
+.soil-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.soil-title {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.soil-visual-container {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Soil Column Visualization */
+.soil-column-wrapper {
+  width: 140px;
+  height: 240px;
+  position: relative;
+  border-radius: 8px;
+  border: 2px solid #334155;
+  background: #1e293b;
+  overflow: hidden;
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.6);
+}
+
+.soil-moisture-level {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(180deg, rgba(2, 132, 199, 0.7) 0%, rgba(5, 150, 105, 0.85) 100%);
+  transition: height 0.4s ease;
+  border-top: 2px solid #38bdf8;
+}
+
+.soil-strata-lines {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(255, 255, 255, 0.08) 20px);
+}
+
+.soil-probe-graphic {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 180px;
+  background: #0f172a;
+  border: 1px solid #64748b;
+  border-radius: 4px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.soil-probe-track {
+  width: 6px;
+  height: 130px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  margin-top: 6px;
+}
+
+/* Plant Status Badge & Radial Info */
+.soil-info-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hydration-pill {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.hydration-pill.arid {
+  background: rgba(217, 119, 6, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(217, 119, 6, 0.4);
+}
+
+.hydration-pill.optimal {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.hydration-pill.saturated {
+  background: rgba(2, 132, 199, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(2, 132, 199, 0.4);
+}
+
+/* Metrics Row */
+.terra-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.terra-stat-box {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px;
+  text-align: center;
+}
+
+.terra-stat-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.terra-stat-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.terra-stat-unit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  margin-left: 2px;
+}
+
+/* Controls Panel */
+.controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-card, #e2e8f0);
+  border-radius: var(--radius-lg, 16px);
+  padding: 20px;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+}
+
+.panel-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main, #0f172a);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.scenario-btn {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-card, #cbd5e1);
+  background: var(--bg-card, #f8fafc);
+  color: var(--text-secondary, #475569);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: center;
+}
+
+.scenario-btn:hover {
+  background: #f1f5f9;
+  color: var(--text-main, #0f172a);
+}
+
+.scenario-btn.active {
+  background: var(--terra-primary);
+  color: #ffffff;
+  border-color: var(--terra-primary);
+}
+
+.control-group {
+  margin-bottom: 14px;
+}
+
+.control-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+  margin-bottom: 6px;
+}
+
+.control-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.control-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--terra-primary);
+  cursor: pointer;
+}
+
+.sim-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.sim-actions .btn {
+  flex: 1;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 160px;
+}
+
+#historyCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 640px) {
+  .terra-metrics-row {
+    grid-template-columns: 1fr;
+  }
+  .scenario-grid {
+    grid-template-columns: 1fr;
+  }
+  .soil-visual-container {
+    flex-direction: column;
+  }
+}

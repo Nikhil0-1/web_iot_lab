@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unit & Integration Tests — Project 04 Digital Thermometer</title>
+  <link rel="stylesheet" href="../../../shared/css/design-system.css">
+  <style>
+    body { padding: 30px; }
+    .test-suite { max-width: 800px; margin: 0 auto; }
+    .test-result { padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 8px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; justify-content: space-between; }
+    .test-pass { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .test-fail { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+  </style>
+</head>
+<body>
+  <div class="test-suite">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+      <h2 style="font-size: 1.4rem;">Project 04: Digital Thermometer Test Suite</h2>
+      <a href="../index.html" class="btn btn-sm">Return to Dashboard</a>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <script src="../../../shared/js/utilities.js"></script>
+  <script src="../../../shared/js/simulation-utils.js"></script>
+  <script src="../../../shared/js/networking.js"></script>
+  <script src="../config/config.js"></script>
+  <script src="../js/simulation.js"></script>
+  <script src="../js/hardware.js"></script>
+  <script>
+    const resultsContainer = document.getElementById('results');
+    let passed = 0;
+    let failed = 0;
+
+    function assert(name, condition, details = '') {
+      const el = document.createElement('div');
+      if (condition) {
+        passed++;
+        el.className = 'test-result test-pass';
+        el.innerHTML = `<span>✓ ${name}</span><span>PASSED</span>`;
+      } else {
+        failed++;
+        el.className = 'test-result test-fail';
+        el.innerHTML = `<span>✗ ${name} (${details})</span><span>FAILED</span>`;
+      }
+      resultsContainer.appendChild(el);
+    }
+
+    // TEST 1: Config validity
+    assert('Config loaded with correct Project ID', window.ThermometerConfig && window.ThermometerConfig.projectId === 'digital-thermometer');
+    assert('Config has required thresholds defined', window.ThermometerConfig.thresholds.warningHigh > window.ThermometerConfig.thresholds.optimalMin);
+
+    // TEST 2: Temperature conversion calculations
+    const cVal = 25.0;
+    const fVal = (cVal * 9/5) + 32;
+    assert('Celsius to Fahrenheit conversion is accurate', Math.abs(fVal - 77.0) < 0.001);
+
+    // TEST 3: Math and Statistics utilities
+    const sampleTemps = [20.0, 22.0, 24.0, 26.0, 28.0];
+    const stats = Utils.calcStats(sampleTemps);
+    assert('Min calculation correct', stats.min === 20.0);
+    assert('Max calculation correct', stats.max === 28.0);
+    assert('Avg calculation correct', stats.avg === 24.0);
+
+    // TEST 4: Simulation step generation
+    const sim = new ThermometerSimulation(window.ThermometerConfig, () => {});
+    sim.setScenario('normal');
+    const normalStep = sim.generateStep('normal', 1);
+    assert('Simulation generates valid reading in normal scenario', normalStep.sensorStatus === 'ok' && typeof normalStep.readings.temperatureC === 'number');
+
+    sim.setScenario('fault');
+    const faultStep = sim.generateStep('fault', 2);
+    assert('Simulation generates fault status on sensor disconnect scenario', faultStep.sensorStatus === 'fault' && faultStep.readings.temperatureC === null);
+
+    // TEST 5: Hardware parser validation
+    let parsedData = null;
+    const hw = new ThermometerHardware(window.ThermometerConfig, (data) => { parsedData = data; });
+    hw.handleData({
+      deviceId: 'esp8266-thermometer-01',
+      projectId: 'digital-thermometer',
+      mode: 'hardware',
+      timestamp: 1000,
+      sensorStatus: 'ok',
+      readings: { temperatureC: 22.4 }
+    });
+    assert('Hardware adapter parses valid API reading', parsedData && parsedData.readings.temperatureC === 22.4);
+    assert('Hardware adapter computes Fahrenheit counterpart', parsedData && Math.abs(parsedData.readings.temperatureF - 72.3) < 0.1);
+
+    // Summary banner
+    const summary = document.createElement('div');
+    summary.style.marginTop = '20px';
+    summary.style.fontWeight = '700';
+    summary.textContent = `Completed: ${passed} passed, ${failed} failed.`;
+    resultsContainer.appendChild(summary);
+  </script>
+</body>
+</html>

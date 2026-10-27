@@ -1,0 +1,25 @@
+# Operating System files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node / Scratch
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.scratch/
+
+# Build artifacts
+*.o
+*.elf
+*.bin
+build/
+.pio/

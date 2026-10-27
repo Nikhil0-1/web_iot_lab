@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automatic Plant Watering â€” Tech IoT Warriors</title>
+  <meta name="description" content="Smart soil moisture monitoring and automatic irrigation control with ESP8266 NodeMCU.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-plant-watering">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 13 &middot; Automatic Plant Watering</div>
+          <div class="brand-subtitle">Capacitive Soil Sensor &middot; Relay Pump Driver &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+
+    <!-- LEFT PANEL: Plant Visualization + Metrics -->
+    <div class="left-panel">
+
+      <!-- Animated Plant + Moisture Gauge -->
+      <div class="card plant-stage-card">
+        <div class="plant-scene" id="plant-scene">
+          <!-- Sky/Bg -->
+          <div class="plant-sky" id="plant-sky"></div>
+          <!-- Plant SVG -->
+          <div class="plant-container" id="plant-container">
+            <svg id="plant-svg" viewBox="0 0 180 240" xmlns="http://www.w3.org/2000/svg">
+              <!-- Pot -->
+              <rect x="60" y="195" width="60" height="40" rx="4" fill="#a0522d"/>
+              <rect x="56" y="192" width="68" height="10" rx="3" fill="#8b4513"/>
+              <!-- Soil -->
+              <ellipse cx="90" cy="196" rx="30" ry="6" fill="#5d4037" id="soil-top"/>
+              <!-- Main stem -->
+              <path id="stem-main" d="M90 192 Q88 160 90 130 Q92 105 88 80" stroke="#2d7a2d" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <!-- Left branch -->
+              <path id="branch-left" d="M89 150 Q70 130 55 135" stroke="#2d7a2d" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <!-- Right branch -->
+              <path id="branch-right" d="M90 120 Q110 100 125 110" stroke="#2d7a2d" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <!-- Left leaf -->
+              <ellipse id="leaf-left" cx="52" cy="133" rx="18" ry="10" fill="#22c55e" transform="rotate(-30 52 133)"/>
+              <!-- Right leaf -->
+              <ellipse id="leaf-right" cx="128" cy="108" rx="18" ry="10" fill="#16a34a" transform="rotate(20 128 108)"/>
+              <!-- Top leaf cluster -->
+              <ellipse id="leaf-top1" cx="86" cy="78" rx="14" ry="9" fill="#22c55e" transform="rotate(-10 86 78)"/>
+              <ellipse id="leaf-top2" cx="96" cy="72" rx="12" ry="8" fill="#15803d" transform="rotate(15 96 72)"/>
+              <!-- Water droplets (shown when watering) -->
+              <g id="water-drops" opacity="0">
+                <circle cx="70" cy="175" r="3" fill="#60a5fa" opacity="0.8"/>
+                <circle cx="90" cy="182" r="2.5" fill="#93c5fd" opacity="0.8"/>
+                <circle cx="110" cy="175" r="3" fill="#60a5fa" opacity="0.8"/>
+                <circle cx="80" cy="168" r="2" fill="#bfdbfe" opacity="0.8"/>
+                <circle cx="105" cy="165" r="2.5" fill="#60a5fa" opacity="0.8"/>
+              </g>
+            </svg>
+          </div>
+          <!-- Moisture Arc Gauge -->
+          <div class="moisture-gauge-overlay">
+            <canvas id="moisture-gauge" width="140" height="80"></canvas>
+            <div class="gauge-label-row">
+              <span id="moisture-value" class="gauge-big-val">--</span>
+              <span class="gauge-unit">%</span>
+            </div>
+            <div id="moisture-status-label" class="gauge-status-lbl">Loadingâ€¦</div>
+          </div>
+        </div>
+
+        <!-- Pump + Mode Row -->
+        <div class="pump-mode-row">
+          <div class="pump-status-chip" id="pump-chip">
+            <span class="pump-dot" id="pump-dot"></span>
+            <span id="pump-label">Pump OFF</span>
+          </div>
+          <div class="mode-chip-row">
+            <button id="btn-auto" class="mode-chip active" onclick="setAutoMode(true)">Auto</button>
+            <button id="btn-manual" class="mode-chip" onclick="setAutoMode(false)">Manual</button>
+          </div>
+          <button id="btn-pump-manual" class="btn btn-sm" onclick="manualPumpToggle()" style="display:none;">Pump Toggle</button>
+        </div>
+      </div>
+
+      <!-- Metric Cards Row -->
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <span class="metric-label">Soil Moisture</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="m-moisture">--</span>
+            <span class="metric-unit">%</span>
+          </div>
+          <span class="metric-sub" id="m-moisture-status">--</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Pump State</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="m-pump">OFF</span>
+          </div>
+          <span class="metric-sub" id="m-pump-reason">--</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Threshold</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="m-threshold">40</span>
+            <span class="metric-unit">%</span>
+          </div>
+          <span class="metric-sub">Auto-water below</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Watering Today</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="m-events">0</span>
+            <span class="metric-unit">times</span>
+          </div>
+          <span class="metric-sub" id="m-last-water">Never</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Controls + History + Chart -->
+    <div class="right-panel">
+
+      <!-- Simulation Controls -->
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Simulation Controls</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" id="btn-pause" onclick="togglePause()">Pause</button>
+            <button class="btn btn-sm btn-subtle" onclick="resetSim()">Reset</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Soil Moisture <span id="lbl-moisture-set">50</span>%</label>
+          <input type="range" id="sl-moisture" min="0" max="100" value="50" class="slider"
+            oninput="simState.targetMoisture=+this.value; document.getElementById('lbl-moisture-set').textContent=this.value">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Auto-water Threshold <span id="lbl-thresh">40</span>%</label>
+          <input type="range" id="sl-threshold" min="10" max="80" value="40" class="slider"
+            oninput="simState.threshold=+this.value; document.getElementById('lbl-thresh').textContent=this.value; document.getElementById('m-threshold').textContent=this.value">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Watering Duration <span id="lbl-duration">10</span> s</label>
+          <input type="range" id="sl-duration" min="5" max="60" value="10" class="slider"
+            oninput="simState.waterDuration=+this.value; document.getElementById('lbl-duration').textContent=this.value">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Simulation Speed</label>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle speed-btn active" data-speed="1" onclick="setSpeed(1,this)">1Ã—</button>
+            <button class="btn btn-sm btn-subtle speed-btn" data-speed="2" onclick="setSpeed(2,this)">2Ã—</button>
+            <button class="btn btn-sm btn-subtle speed-btn" data-speed="5" onclick="setSpeed(5,this)">5Ã—</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Connection Card (hidden by default) -->
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">Hardware Connection</span>
+          <span id="hw-conn-status" class="status-pill status-idle">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">ESP8266 IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100" value="">
+            <button class="btn btn-sm" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div id="hw-error-msg" class="error-msg" style="display:none;"></div>
+        <div id="hw-last-seen" class="meta-text" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Moisture Trend Chart -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Moisture Trend</span>
+          <span class="meta-text" id="chart-pts">0 pts</span>
+        </div>
+        <canvas id="moisture-chart" height="120" style="width:100%;display:block;"></canvas>
+      </div>
+
+      <!-- Watering Event History -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Watering History</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearHistory()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list">
+          <div class="event-empty">No watering events yet.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup â€” Project 13: Automatic Plant Watering</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Hardware:</strong> NodeMCU ESP8266, Capacitive Soil Moisture Sensor, 5V Relay Module, Low-voltage DC pump, External 5â€“12V pump supply.</p>
+        <p><strong>GPIO Map:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>Soil sensor AOUT â†’ A0 (ADC)</li>
+          <li>Relay IN â†’ D1 (GPIO5) â€” Active LOW</li>
+          <li>Sensor VCC â†’ 3.3V, GND â†’ GND</li>
+          <li>Relay VCC â†’ 5V (VIN), GND â†’ GND</li>
+          <li>Pump on NO contact of relay; external supply to COM</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/plant_watering.ino</code> via Arduino IDE. Set your Wi-Fi SSID and password inside the file. After booting, find the device IP from your router DHCP list or Serial Monitor.</p>
+        <p><strong>Safety:</strong> Never power the pump directly from ESP8266 GPIO. Use the relay with appropriate external supply rated for your pump.</p>
+        <p><strong>Local Server:</strong> Run <code>python -m http.server 8000</code> in the project root then open <code>http://localhost:8000/</code> to avoid CORS issues with the ESP8266.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/simulation-utils.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

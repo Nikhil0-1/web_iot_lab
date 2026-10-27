@@ -1,0 +1,299 @@
+/* ==========================================================================
+   Project 04 — Digital Thermometer: Premium Laboratory Station Styles
+   ========================================================================== */
+
+/* Main Instrument Showcase Stage */
+.thermo-stage-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 48px;
+  position: relative;
+  overflow: hidden;
+  background-image: radial-gradient(circle at 10% 20%, rgba(255, 237, 213, 0.4) 0%, transparent 55%);
+}
+
+@media (max-width: 860px) {
+  .thermo-stage-card {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 24px;
+    justify-items: center;
+  }
+}
+
+/* Borosilicate Glass Column Mounting & Instrument Assembly */
+.thermometer-assembly {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 48px 20px 48px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: var(--radius-xl);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.95), 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  flex-shrink: 0;
+}
+
+.assembly-bracket {
+  position: absolute;
+  width: 44px;
+  height: 9px;
+  background: linear-gradient(90deg, #94a3b8 0%, #e2e8f0 40%, #94a3b8 100%);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+}
+.assembly-bracket.top { top: 12px; }
+.assembly-bracket.bottom { bottom: 12px; }
+
+/* Thermometer Tube & Scale Layout */
+.thermometer-tube-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 140px;
+  height: 270px;
+}
+
+/* Borosilicate Glass Stem */
+.thermometer-stem {
+  position: absolute;
+  bottom: 38px;
+  width: 22px;
+  height: 220px;
+  background: rgba(241, 245, 249, 0.6);
+  border: 2px solid rgba(15, 23, 42, 0.24);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  box-shadow: inset 2px 0 4px rgba(255, 255, 255, 0.9), inset -2px 0 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Specular Reflection Highlight */
+.thermometer-stem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 3px;
+  width: 3.5px;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.25) 100%);
+  border-radius: 2px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Mercury Fluid Column */
+.mercury-fluid {
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(180deg, #fb7185 0%, #e11d48 100%);
+  border-radius: 6px 6px 0 0;
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.6s ease;
+  position: relative;
+  box-shadow: 0 0 14px rgba(225, 29, 72, 0.45);
+}
+
+/* Fluid Meniscus Curve */
+.mercury-fluid::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 1px;
+  right: 1px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+}
+
+/* Bulb Reservoir */
+.thermometer-bulb {
+  position: absolute;
+  bottom: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #fda4af 0%, #e11d48 65%, #9f1239 100%);
+  border: 2px solid rgba(15, 23, 42, 0.24);
+  box-shadow: 0 6px 18px rgba(190, 18, 60, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.7);
+  transition: background 0.6s ease;
+  z-index: 3;
+}
+
+/* Dual Precision Etched Scales */
+.thermo-scale {
+  position: absolute;
+  bottom: 38px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.thermo-scale.celsius {
+  left: 92px;
+}
+
+.thermo-scale.fahrenheit {
+  right: 92px;
+  align-items: flex-end;
+}
+
+.scale-mark {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+}
+
+.scale-tick {
+  width: 7px;
+  height: 1.5px;
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.scale-tick.major {
+  width: 14px;
+  height: 2px;
+  background: var(--text-main);
+}
+
+/* Editorial Temperature Readout Column */
+.thermo-editorial-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.thermo-main-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.thermo-large-num {
+  font-size: 4.8rem;
+  font-weight: 800;
+  font-family: var(--font-family);
+  letter-spacing: -0.04em;
+  color: var(--text-main);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.thermo-unit-sup {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.thermo-classification-badge {
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  box-shadow: var(--shadow-xs);
+}
+
+/* Borderless Minimal Telemetry Strip */
+.telemetry-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.telemetry-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.telemetry-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.telemetry-val {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-main);
+}
+
+/* Scenario Quick-Pills Row */
+.scenario-quick-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.scenario-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card-subtle);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.scenario-chip:hover {
+  background: #ffffff;
+  border-color: var(--theme-accent);
+  color: var(--theme-accent-dark);
+  transform: translateY(-1px);
+}
+
+.scenario-chip.active {
+  background: var(--theme-accent);
+  color: #ffffff;
+  border-color: var(--theme-accent-dark);
+}
+
+/* Compact Control Deck (Drawer/Bar) */
+.instrument-deck {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.deck-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}

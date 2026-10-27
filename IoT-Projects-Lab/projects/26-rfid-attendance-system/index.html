@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RFID Attendance System — Tech IoT Warriors</title>
+  <meta name="description" content="Contactless 13.56MHz RFID institutional attendance logging terminal with ESP8266 and RC522.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-rfid-attendance">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 26 &middot; RFID Attendance System</div>
+          <div class="brand-subtitle">MFRC522 Contactless &middot; Real-Time Registry &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Terminal Visual & Student Card Tap -->
+    <div class="left-panel">
+      <!-- Terminal Device Graphic -->
+      <div class="card terminal-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">RFID Check-In Terminal</span>
+            <div class="meta-text" id="terminal-status-sub">MFRC522 Ready &middot; 13.56MHz High Frequency</div>
+          </div>
+          <span class="badge" id="terminal-badge" style="background:#ecfdf5;color:#059669;">Scanner Idle</span>
+        </div>
+
+        <!-- Animated Scanner Target Zone -->
+        <div class="rfid-scanner-stage" id="rfid-stage">
+          <div class="rfid-device-enclosure">
+            <div class="rfid-logo-wrap">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+                <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+                <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/>
+              </svg>
+            </div>
+            <div class="scanner-screen">
+              <div class="scanner-screen-hdr">ID VERIFIED</div>
+              <div class="scanner-screen-name" id="terminal-screen-name">PLEASE TAP CARD</div>
+              <div class="scanner-screen-uid" id="terminal-screen-uid">UID: -- -- -- --</div>
+            </div>
+            <div class="rfid-led-indicator" id="terminal-led"></div>
+          </div>
+
+          <!-- Animated Smart Card that hovers & taps -->
+          <div class="rfid-card-token" id="animated-rfid-card">
+            <div class="chip-graphic"></div>
+            <div class="card-num" id="card-display-num">CARD 04 A1 B2 C3</div>
+            <div class="card-holder" id="card-display-holder">Aarav Patel</div>
+          </div>
+        </div>
+
+        <!-- Sample Cards Selector Bar -->
+        <div class="sample-cards-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Tap Sample Student Card:</span>
+          <div class="card-pills-row">
+            <button class="btn btn-sm btn-subtle card-pick-btn" onclick="tapCard(0)">Aarav Patel (04A1B2C3)</button>
+            <button class="btn btn-sm btn-subtle card-pick-btn" onclick="tapCard(1)">Priya Sharma (92D4E5F6)</button>
+            <button class="btn btn-sm btn-subtle card-pick-btn" onclick="tapCard(2)">Rohan Verma (33F7A8B9)</button>
+            <button class="btn btn-sm btn-subtle card-pick-btn" onclick="tapCard(3)">Neha Gupta (55C1D2E3)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance Registry Table -->
+      <div class="card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Attendance Registry Log</span>
+            <div class="meta-text" id="registry-count-sub">4 Students Registered &middot; Live Roll Call</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" onclick="exportAttendanceCSV()">Export CSV</button>
+            <button class="btn btn-sm btn-subtle" onclick="clearAttendanceLog()">Clear</button>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div style="margin:12px 0 16px 0;">
+          <input type="text" id="attendance-search" class="text-input" placeholder="Search by name, roll number, or UID…" oninput="filterAttendanceTable(this.value)">
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap" style="max-height:280px;overflow-y:auto;">
+          <table class="data-table" id="attendance-table">
+            <thead>
+              <tr>
+                <th>Roll No</th>
+                <th>Student Name</th>
+                <th>Card UID</th>
+                <th>Check-In Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Stats & Hardware Connection -->
+    <div class="right-panel">
+      <!-- Daily Attendance Stats -->
+      <div class="card">
+        <span class="card-title">Daily Attendance Stats</span>
+        <div class="stats-metric-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+          <div class="stat-box" style="background:var(--bg-main);padding:12px;border-radius:var(--radius-sm);text-align:center;">
+            <div style="font-size:0.75rem;color:var(--text-secondary);font-weight:600;">Present</div>
+            <div style="font-size:1.6rem;font-weight:800;color:#059669;" id="stat-present-count">2</div>
+          </div>
+          <div class="stat-box" style="background:var(--bg-main);padding:12px;border-radius:var(--radius-sm);text-align:center;">
+            <div style="font-size:0.75rem;color:var(--text-secondary);font-weight:600;">Absent</div>
+            <div style="font-size:1.6rem;font-weight:800;color:#e11d48;" id="stat-absent-count">2</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:0.8rem;color:var(--text-secondary);display:flex;justify-content:space-between;">
+          <span>Attendance Rate:</span>
+          <strong id="stat-rate">50.0%</strong>
+        </div>
+      </div>
+
+      <!-- Hardware Connection Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 Hardware Link</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 Hostname / IP</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Verification Notice -->
+      <div class="card" style="border-left:4px solid #059669;">
+        <span class="card-title" style="font-size:0.85rem;color:#065f46;">Academic Verification Note</span>
+        <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin-top:6px;">
+          Simulated records are virtual placeholders. In hardware mode, physical RFID cards are read via the SPI MFRC522 reader module and cryptographically compared against the flash registry.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 26: RFID Attendance</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, MFRC522 13.56MHz Reader, 5V Active Buzzer, NPN 2N2222.</p>
+        <p><strong>SPI Bus Pinout:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>VCC &rarr; <strong>3.3V ONLY</strong> (Do NOT connect 5V to RC522!)</li>
+          <li>RST &rarr; D3 (GPIO 0)</li>
+          <li>GND &rarr; GND Common</li>
+          <li>MISO &rarr; D6 (GPIO 12)</li>
+          <li>MOSI &rarr; D7 (GPIO 13)</li>
+          <li>SCK &rarr; D5 (GPIO 14)</li>
+          <li>SDA (SS) &rarr; D8 (GPIO 15)</li>
+          <li>Buzzer Chime &rarr; D1 (GPIO 5) via 2N2222 transistor</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/rfid_attendance.ino</code> with <code>MFRC522</code> library.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

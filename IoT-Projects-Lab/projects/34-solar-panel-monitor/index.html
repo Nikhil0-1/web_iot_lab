@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar Panel Monitor — Tech IoT Warriors</title>
+  <meta name="description" content="Photovoltaic solar generation telemetry with INA219 I2C high-side power tracking and daily energy accumulation.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-solar-monitor">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 34 &middot; Solar Panel Monitor</div>
+          <div class="brand-subtitle">INA219 I&sup2;C High-Side Sensor &middot; PV Yield &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Animated Sun & Solar Array Canvas -->
+    <div class="left-panel">
+      <!-- Solar Visual Stage -->
+      <div class="card solar-stage-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Photovoltaic Array &amp; Solar Trajectory</span>
+            <div class="meta-text" id="solar-sub">Daylight State: Peak Direct Sunlight &middot; INA219 Active</div>
+          </div>
+          <span class="badge" id="sunlight-badge" style="background:#fef3c7;color:#b45309;font-weight:700;">Peak Sunlight</span>
+        </div>
+
+        <div class="solar-canvas-wrap">
+          <canvas id="solar-canvas" width="680" height="260"></canvas>
+        </div>
+
+        <!-- Simulation Scenarios -->
+        <div class="scenario-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Daylight Conditions:</span>
+          <button class="btn btn-sm btn-subtle" onclick="setSunlight('noon')">Solar Noon (100% Sun)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setSunlight('overcast')">Overcast Cloud (35% Sun)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setSunlight('sunset')">Golden Sunset (12% Sun)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setSunlight('night')">Night (0% Generation)</button>
+        </div>
+      </div>
+
+      <!-- Telemetry Metric Row -->
+      <div class="metric-row">
+        <div class="metric-box">
+          <span class="metric-label">Panel Voltage</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-solar-volts">18.2</span>
+            <span class="metric-unit">V DC</span>
+          </div>
+          <div class="meta-text">Bus Voltage INA219</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Array Current</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-solar-ma">1420</span>
+            <span class="metric-unit">mA</span>
+          </div>
+          <div class="meta-text">0.1&Omega; Shunt Resistor</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Instant Power</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-solar-power" style="color:#d97706;">25.8</span>
+            <span class="metric-unit">W</span>
+          </div>
+          <div class="meta-text">Active PV Output</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Daily Yield</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-daily-wh" style="color:#059669;">142.5</span>
+            <span class="metric-unit">Wh</span>
+          </div>
+          <div class="meta-text">Cumulative Energy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Hardware Link & Technical Parameters -->
+    <div class="right-panel">
+      <!-- Hardware Connection Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 Solar Hub</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- INA219 Technical Limits Note -->
+      <div class="card" style="border-left:4px solid #ca8a04;background:#fefce8;">
+        <span class="card-title" style="font-size:0.85rem;color:#854d0e;">INA219 Voltage Rating Notice</span>
+        <p style="font-size:0.8rem;color:#713f12;line-height:1.5;margin-top:4px;">
+          The Texas Instruments INA219 supports a maximum bus voltage of <strong>26V DC</strong> and &plusmn;3.2A with the standard 0.1&Omega; shunt resistor. Do not connect larger solar strings (>24V open-circuit Voc) directly to the INA219 breakout.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 34: Solar Panel Monitor</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, INA219 I&sup2;C High-Side Current &amp; Voltage Sensor, 12V/18V Photovoltaic Panel.</p>
+        <p><strong>I&sup2;C Bus Pinout:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>INA219 VCC &rarr; 3.3V NodeMCU</li>
+          <li>INA219 GND &rarr; Common GND</li>
+          <li>INA219 SCL &rarr; NodeMCU D1 (GPIO 5)</li>
+          <li>INA219 SDA &rarr; NodeMCU D2 (GPIO 4)</li>
+          <li>VIN+ &rarr; Solar Panel Positive (+)</li>
+          <li>VIN- &rarr; Battery Charge Controller (+) / Load (+)</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/solar_monitor.ino</code> using <code>Adafruit_INA219</code> library.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
