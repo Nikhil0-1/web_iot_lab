@@ -3,56 +3,2101 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0; url=IoT-Projects-Lab/">
-  <title>Tech IoT Warriors — 36-Module IoT Projects Lab</title>
-  <script>
-    window.location.replace("IoT-Projects-Lab/");
-  </script>
+  <title>Tech IoT Warriors — Smart Sensor Monitoring Suite & Control Center</title>
+  <meta name="description" content="Comprehensive laboratory suite of 36 interactive IoT sensor monitoring, automation, and smart systems dashboards with native ESP8266 firmware.">
+  <link rel="stylesheet" href="shared/css/design-system.css">
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
+    .hero-section {
+      padding: 44px 0 32px 0;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(253, 251, 247, 0.9) 0%, rgba(246, 243, 237, 0.7) 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 32px;
+    }
+
+    .hero-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .hero-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 720px;
+      margin: 0 auto 20px auto;
+      line-height: 1.6;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .category-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .category-pill {
+      padding: 7px 15px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .category-pill.active, .category-pill:hover {
+      background: var(--text-main);
+      color: #ffffff;
+      border-color: var(--text-main);
+    }
+
+    .search-box {
+      position: relative;
+      min-width: 280px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 9px 16px 9px 38px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      outline: none;
+      font-size: 0.875rem;
+      transition: all var(--transition-fast);
+    }
+
+    .search-input:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    /* Section Category Headings */
+    .section-category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--border-subtle);
+      padding-bottom: 10px;
+      margin-top: 36px;
+      margin-bottom: 24px;
+    }
+
+    .section-category-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-category-count {
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    /* Project Cards Grid */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      border-top: 4px solid var(--theme-accent, #0284c7);
+      animation: cardFadeIn 0.4s ease backwards;
+    }
+
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .project-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .project-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--theme-tag-bg, #f1f5f9);
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .project-titles {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .project-num {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .project-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 1px 0 0 0;
+      line-height: 1.3;
+    }
+
+    .project-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0 0 16px 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .sensor-spec-box {
+      background: var(--bg-main, #f8fafc);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sensor-spec-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+    }
+
+    .spec-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .spec-val {
+      color: var(--text-main);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .project-badges {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .badge-sim {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #047857;
+      background: #ecfdf5;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid #a7f3d0;
+    }
+
+    .badge-hw {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #0369a1;
+      background: #f0f9ff;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid #bae6fd;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .card-actions .btn-primary {
+      flex: 1;
+      justify-content: center;
       text-align: center;
     }
-    .loader-box {
-      background: #1e293b;
-      padding: 36px 44px;
-      border-radius: 14px;
-      border: 1px solid #334155;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      max-width: 420px;
-    }
-    h2 {
-      margin-top: 0;
-      color: #38bdf8;
-      font-size: 1.5rem;
-    }
-    p {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-    a {
-      color: #38bdf8;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    a:hover {
-      text-decoration: underline;
+
+    @media (max-width: 640px) {
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-box {
+        min-width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="loader-box">
-    <h2>Tech IoT Warriors</h2>
-    <p>Loading 36-Module IoT Projects Lab Suite...</p>
-    <p><small>If you are not redirected automatically, <a href="IoT-Projects-Lab/">click here to launch</a>.</small></p>
+
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </div>
+        <div>
+          <div>Tech IoT Warriors</div>
+          <div class="brand-subtitle">Smart Sensor Monitoring &amp; Automation Suite &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Quick Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <span class="postal-badge">36 PROJECTS READY (CATEGORIES A, B &amp; C)</span>
+        <a href="tests/index.html" class="btn btn-sm btn-subtle" title="Run Comprehensive Test Suite">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Tests
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <span class="postal-badge" style="margin-bottom: 12px;">Interactive Engineering Suite</span>
+      <h1 class="hero-title">Explore Smart Sensors, Automation &amp; Smart Systems</h1>
+      <p class="hero-subtitle">
+        Thirty-six independent, interactive laboratory monitoring, control, and smart systems dashboards. Run high-fidelity simulations directly in your browser or connect physical ESP8266 NodeMCU hardware over your local Wi-Fi network.
+      </p>
+
+      <!-- Stat Badges Row -->
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin-top: 20px;">
+        <div class="metric-box" style="flex: 0 1 180px; padding: 12px 18px; text-align: left;">
+          <span class="metric-label">Active Modules</span>
+          <div class="metric-value-row">
+            <span class="metric-value" style="font-size: 1.4rem;">36 / 36</span>
+            <span class="metric-unit">Active</span>
+          </div>
+        </div>
+        <div class="metric-box" style="flex: 0 1 180px; padding: 12px 18px; text-align: left;">
+          <span class="metric-label">Simulations</span>
+          <div class="metric-value-row">
+            <span class="metric-value" style="font-size: 1.4rem; color: #059669;">36 / 36</span>
+            <span class="metric-unit">Ready</span>
+          </div>
+        </div>
+        <div class="metric-box" style="flex: 0 1 180px; padding: 12px 18px; text-align: left;">
+          <span class="metric-label">Hardware Firmware</span>
+          <div class="metric-value-row">
+            <span class="metric-value" style="font-size: 1.4rem; color: #0284c7;">36 / 36</span>
+            <span class="metric-unit">Ready</span>
+          </div>
+        </div>
+        <div class="metric-box" style="flex: 0 1 180px; padding: 12px 18px; text-align: left;">
+          <span class="metric-label">Dependencies</span>
+          <div class="metric-value-row">
+            <span class="metric-value" style="font-size: 1.4rem;">Zero</span>
+            <span class="metric-unit">Pure Vanilla</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Area -->
+  <main class="container">
+    <!-- Filter and Search Bar -->
+    <div class="filter-bar">
+      <div class="category-pills">
+        <button class="category-pill active" data-category="all">All Projects (36)</button>
+        <button class="category-pill" data-category="cat-a">Sensors &amp; Monitoring (12)</button>
+        <button class="category-pill" data-category="cat-b">Automation &amp; Control (12)</button>
+        <button class="category-pill" data-category="cat-c">Smart Systems (12)</button>
+        <button class="category-pill" data-category="environment">Environment</button>
+        <button class="category-pill" data-category="fluid">Fluid &amp; Water</button>
+        <button class="category-pill" data-category="safety">Safety &amp; Security</button>
+        <button class="category-pill" data-category="motors">Motors &amp; Actuators</button>
+        <button class="category-pill" data-category="energy">Energy &amp; Power</button>
+      </div>
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="project-search" class="search-input" placeholder="Search project, sensor, or keyword...">
+      </div>
+    </div>
+
+    <!-- SENSORS & MONITORING — 01–12 -->
+    <div class="section-category-header" id="heading-cat-a">
+      <div class="section-category-title">
+        <span>SENSORS &amp; MONITORING — 01–12</span>
+      </div>
+      <span class="section-category-count">12 Projects</span>
+    </div>
+
+    <div class="projects-grid" id="grid-cat-a">
+
+      <!-- PROJECT 01: TERRASCAN X ELITE -->
+      <div class="card project-card theme-radar" data-category="cat-a environment safety" data-name="terrascan x elite ultrasonic radar distance hc-sr04 obstacle">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">01</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 01</div>
+              <h2 class="project-name">TERRASCAN X ELITE</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            High-precision ultrasonic radar telemetry with 180° radial sweep animation, obstacle proximity tracking, and collision alert triggers.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">HC-SR04 Ultrasonic Transceiver</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1 (Trig) / D2 (Echo)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Distance (2–400 cm) / Azimuth (°)</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/01-terrascan-x-elite/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p01">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 02: RAINWATCH AI -->
+      <div class="card project-card theme-rain" data-category="cat-a environment fluid" data-name="rainwatch ai rain detection precipitation weather lm393">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">02</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 02</div>
+              <h2 class="project-name">RAINWATCH AI</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Dynamic precipitation telemetry, droplet density estimation, rainfall rate calculation, and severe storm threshold warnings.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Resistive Rain Grid & LM393</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Analog A0 & Digital D1</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Rain Intensity (0–100%) & Rate (mm/h)</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/02-rainwatch-ai/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p02">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 03: TerraIQ -->
+      <div class="card project-card theme-terra" data-category="cat-a environment agriculture" data-name="terraiq soil moisture capacitive probe irrigation">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">03</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 03</div>
+              <h2 class="project-name">TerraIQ</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Capacitive dielectric soil moisture monitoring with subterranean stratum visualization, dry/bog alert thresholds, and calibration.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Capacitive Soil Probe v1.2</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Analog A0 (0–3.3V)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Calibrated Moisture % & Probe Voltage</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/03-terraiq/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p03">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 04: ATMOS AI -->
+      <div class="card project-card theme-atmos" data-category="cat-a environment climate" data-name="atmos ai temperature humidity climate comfort dht22">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">04</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 04</div>
+              <h2 class="project-name">ATMOS AI</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Atmospheric climate monitoring with dual high-DPI radial meters, ASHRAE thermal comfort classification, and heat index calculations.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">DHT22 Digital Climate Sensor</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Digital D4 (GPIO 2)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Temperature (°C/°F), Humidity (% RH), Heat Index</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/04-atmos-ai/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p04">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 05: Smart Air Quality Monitor -->
+      <div class="card project-card theme-air-quality" data-category="cat-a environment" data-name="smart air quality monitor mq135 gas vapor index">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">05</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 05</div>
+              <h2 class="project-name">Smart Air Quality Monitor</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Continuous ambient air-quality tracking with moving particle visualization, warm-up diagnostics, and air quality tier evaluation.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">MQ-135 Gas / Air Quality</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Analog A0 (0–3.3V)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Air Index / Baseline ADC</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/05-smart-air-quality-monitor/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p05">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 06: Gas Leakage Detector -->
+      <div class="card project-card theme-gas-leakage" data-category="cat-a safety" data-name="gas leakage detector mq2 mq5 alarm combustible">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">06</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 06</div>
+              <h2 class="project-name">Gas Leakage Detector</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Rapid combustible gas and smoke leak detection with critical alarm states, solenoid cutoff actuation, and acoustic alert simulation.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">MQ-2 / MQ-5 Gas Transducer</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Analog A0 & Digital D5 Buzzer</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Gas Concentration Index & Alarm Cutoff</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/06-gas-leakage-detector/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p06">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 07: LDR Light Intensity Monitor -->
+      <div class="card project-card theme-light-intensity" data-category="cat-a environment" data-name="ldr light intensity monitor photoresistor lux brightness">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">07</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 07</div>
+              <h2 class="project-name">LDR Light Intensity Monitor</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Ambient illuminance monitoring using a photoresistor voltage divider with day/dusk/night transitions and threshold calibration.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Photoresistor (LDR) Divider</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Analog A0 (0–3.3V)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Relative Brightness & Day/Night Status</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/07-ldr-light-intensity-monitor/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p07">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 08: Digital Thermometer -->
+      <div class="card project-card theme-thermometer" data-category="cat-a environment climate" data-name="digital thermometer ds18b20 onewire temperature">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">08</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 08</div>
+              <h2 class="project-name">Digital Thermometer</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Industrial-grade thermal monitoring with high-precision DS18B20 1-Wire interface, min/max statistics, and Celsius/Fahrenheit toggle.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">DS18B20 1-Wire Sensor</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Digital D4 (GPIO 2)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Temperature (-55°C to +125°C)</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/08-digital-thermometer/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p08">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 09: Water Level Monitor -->
+      <div class="card project-card theme-water-level" data-category="cat-a fluid" data-name="water level monitor ultrasonic hcsr04 tank volume depth">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">09</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 09</div>
+              <h2 class="project-name">Water Level Monitor</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Non-contact ultrasonic tank volume tracking with cylindrical reservoir visualization, low/overflow alarms, and geometry calculation.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">HC-SR04 Ultrasonic Sensor</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1 (Trig) / D2 (Echo)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Fill Level (%), Volume (L), Depth</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/09-water-level-monitor/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p09">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 10: Water Flow Meter -->
+      <div class="card project-card theme-water-flow" data-category="cat-a fluid" data-name="water flow meter yfs201 hall effect pulse volume rate">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">10</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 10</div>
+              <h2 class="project-name">Water Flow Meter</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Hydraulic flow telemetry using Hall-effect magnetic pulses with real-time discharge rate (L/min) and total volume accumulation.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">YF-S201 Hall-Effect Sensor</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Digital D2 (GPIO 4)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Flow Rate (L/min) & Cumulative Volume</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/10-water-flow-meter/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p10">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 11: TDS Water Quality Monitor -->
+      <div class="card project-card theme-tds-quality" data-category="cat-a fluid" data-name="tds water quality monitor total dissolved solids ppm purity">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">11</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 11</div>
+              <h2 class="project-name">TDS Water Quality Monitor</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Electrolytic total dissolved solids gauging with temperature compensation, water purity banding, and calibration offset controls.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Analog TDS Sensor & Probe</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Analog A0 (0–3.3V)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Dissolved Solids (ppm) & Purity Class</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/11-tds-water-quality-monitor/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p11">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 12: Vibration & Tilt Monitor -->
+      <div class="card project-card theme-vibration-tilt" data-category="cat-a safety" data-name="vibration tilt monitor mpu6050 imu accelerometer sw420">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">12</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 12</div>
+              <h2 class="project-name">Vibration & Tilt Monitor</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Dual-sensor structural integrity telemetry combining piezoelectric impact detection with 3-axis MPU-6050 IMU tilt and inclination angles.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">MPU-6050 IMU & SW-420 Piezo</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">I2C SCL (D1) / SDA (D2)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">3-Axis Accel (g), Pitch/Roll (°), Impact</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/12-vibration-tilt-monitor/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p12">Setup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTOMATION & CONTROL — 13–24 -->
+    <div class="section-category-header" id="heading-cat-b">
+      <div class="section-category-title">
+        <span>AUTOMATION &amp; CONTROL — 13–24</span>
+      </div>
+      <span class="section-category-count">12 Projects</span>
+    </div>
+
+    <div class="projects-grid" id="grid-cat-b">
+
+      <!-- PROJECT 13: Automatic Plant Watering -->
+      <div class="card project-card theme-plant-watering" data-category="cat-b automation agriculture" data-name="automatic plant watering soil moisture pump relay">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">13</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 13</div>
+              <h2 class="project-name">Automatic Plant Watering</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Closed-loop irrigation controller maintaining root-zone hydration via capacitive sensing and optoisolated submersible DC pump relays.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Capacitive Soil + Relay Pump</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">A0 (Soil) / D1 (Relay)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Soil Moisture % & Pump Runtime</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/13-automatic-plant-watering/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p13">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 14: Smart Water Tank Controller -->
+      <div class="card project-card theme-water-tank" data-category="cat-b automation fluid" data-name="smart water tank controller ultrasonic pump level">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">14</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 14</div>
+              <h2 class="project-name">Smart Water Tank Controller</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Dual-threshold automated reservoir filling system with dry-run protection, ultrasonic depth tracking, and pump duty-cycle monitoring.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">HC-SR04 + Dual Float Relay</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1/D2 (Echo) / D5 (Relay)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Tank Level (%) & Pump State</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/14-smart-water-tank-controller/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p14">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 15: Smart Street Light -->
+      <div class="card project-card theme-street-light" data-category="cat-b automation" data-name="smart street light ldr pir motion pwm led">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">15</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 15</div>
+              <h2 class="project-name">Smart Street Light</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Adaptive municipal lighting combining LDR dusk/dawn ambient sensing with PIR motion detection and soft PWM dimming energy efficiency.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">LDR + PIR Motion + PWM LED</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">A0 (LDR) / D2 (PIR) / D1 (PWM)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Brightness %, PIR Motion, LUX</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/15-smart-street-light/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p15">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 16: Wi-Fi Home Automation -->
+      <div class="card project-card theme-home-automation" data-category="cat-b automation" data-name="wifi home automation multi relay appliance switch">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">16</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 16</div>
+              <h2 class="project-name">Wi-Fi Home Automation</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Four-channel optoisolated appliance controller with independent load naming, master all-on/all-off safety, and relay state persistence.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">4-Channel Isolated Relay</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1, D2, D5, D6 Relays</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">4 Channels Independent Power</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/16-wifi-home-automation/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p16">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 17: Fan Speed Controller -->
+      <div class="card project-card theme-fan-speed" data-category="cat-b automation motors" data-name="fan speed controller pwm mosfet rpm tachometer">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">17</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 17</div>
+              <h2 class="project-name">Fan Speed Controller</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            High-frequency 1kHz PWM fan throttling with simulated tachometer RPM telemetry, soft acceleration ramps, and thermal load coupling.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">PWM MOSFET Driver + Tach</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1 (PWM) / D2 (Tach)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">PWM Duty (0–100%) & RPM (~3200)</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/17-fan-speed-controller/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p17">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 18: Smart Exhaust Fan -->
+      <div class="card project-card theme-exhaust-fan" data-category="cat-b automation environment" data-name="smart exhaust fan dht temperature humidity ventilation">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">18</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 18</div>
+              <h2 class="project-name">Smart Exhaust Fan</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Automated facility ventilation system utilizing DHT environmental readings with programmable dual temperature/humidity thresholds.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">DHT22 Climate + Fan Relay</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D4 (DHT) / D1 (Fan Relay)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Temp, Humidity, Exhaust State</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/18-smart-exhaust-fan/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p18">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 19: Automatic Door Controller -->
+      <div class="card project-card theme-door-controller" data-category="cat-b automation motors" data-name="automatic door controller proximity ultrasonic servo obstruction">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">19</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 19</div>
+              <h2 class="project-name">Automatic Door Controller</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Proximity-actuated entry portal with obstruction sensing, automatic countdown closure timer, and servo door angle visualization.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Proximity Sensor + Servo</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1/D2 (Sensor) / D5 (Servo)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Door Position (0–90°) & Auto-timer</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/19-automatic-door-controller/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p19">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 20: Servo Motor Web Control -->
+      <div class="card project-card theme-servo-control" data-category="cat-b automation motors" data-name="servo motor web control angular position horn sweep">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">20</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 20</div>
+              <h2 class="project-name">Servo Motor Web Control</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Sub-degree servo positioning console with interactive animated horn visualizer, angle presets, sweep oscillations, and microsecond timings.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">PWM Servo Micro-Actuator</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">Digital D5 (GPIO 14)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Angle (0–180°) & Pulse (544–2400µs)</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/20-servo-motor-web-control/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p20">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 21: DC Motor Control Panel -->
+      <div class="card project-card theme-dc-motor" data-category="cat-b automation motors" data-name="dc motor control panel h-bridge tb6612 l298n direction speed">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">21</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 21</div>
+              <h2 class="project-name">DC Motor Control Panel</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Dual full-bridge motor driver interface supporting clockwise/counter-clockwise directional switching, PWM throttle, and active braking.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">H-Bridge Driver L298N</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1/D2 (Dir) / D5 (PWM)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Direction (CW/CCW) & Speed (0–100%)</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/21-dc-motor-control-panel/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p21">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 22: Stepper Motor Controller -->
+      <div class="card project-card theme-stepper-motor" data-category="cat-b automation motors" data-name="stepper motor controller a4988 indexing coordinate home">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">22</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 22</div>
+              <h2 class="project-name">Stepper Motor Controller</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Precision micro-stepping motion controller with target absolute step indexing, homing routines, jog controls, and step coordinate readouts.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">A4988 Bipolar Driver</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1 (Step) / D2 (Dir) / D5 (EN)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Target Steps, Position, Speed SPS</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/22-stepper-motor-controller/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p22">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 23: Relay Control Dashboard -->
+      <div class="card project-card theme-relay-dashboard" data-category="cat-b automation" data-name="relay control dashboard pulse multi channel load bank">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">23</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 23</div>
+              <h2 class="project-name">Relay Control Dashboard</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Heavy-duty multi-channel relay bank management console with configurable inching pulses, cycle testing, and boot-safe active-LOW logic.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">4-Channel Optoisolated Bank</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1, D2, D5, D6 Relays</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">4 Isolated Channels, Inching Pulses</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/23-relay-control-dashboard/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p23">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 24: Smart Greenhouse Automation -->
+      <div class="card project-card theme-greenhouse" data-category="cat-b automation environment agriculture" data-name="smart greenhouse automation climate irrigation fan pump">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:var(--theme-accent-dark, #0284c7);">24</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 24</div>
+              <h2 class="project-name">Smart Greenhouse Automation</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Comprehensive multi-sensor greenhouse climate and irrigation supervisor unifying ambient DHT, soil moisture, water level, ventilation, and watering.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Quad-Sensor Multi-Actuator Hub</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D4 (DHT), A0 (Soil), D1 (Fan), D2 (Pump)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Temp, RH, Soil %, Level %, Fan & Pump</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/24-smart-greenhouse-automation/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p24">Setup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMART SYSTEMS — 25–36 -->
+    <div class="section-category-header" id="heading-cat-c">
+      <div class="section-category-title">
+        <span>SMART SYSTEMS — 25–36</span>
+      </div>
+      <span class="section-category-count">12 Projects</span>
+    </div>
+
+    <div class="projects-grid" id="grid-cat-c">
+
+      <!-- PROJECT 25: Smart Parking Assistant -->
+      <div class="card project-card theme-parking" data-category="cat-c automation safety" data-name="smart parking assistant ultrasonic servo barrier slot" style="--theme-accent: #0284c7;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#0284c7;">25</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 25</div>
+              <h2 class="project-name">Smart Parking Assistant</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Ultrasonic bay-occupancy detection with servo-actuated barrier gate, real-time slot availability display, and vehicle entry/exit logging.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">HC-SR04 + SG90 Servo Barrier</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1/D2 (Trig/Echo) / D5 (Servo)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Slot Status, Distance (cm), Gate Angle</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/25-smart-parking-assistant/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p25">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 26: RFID Attendance System -->
+      <div class="card project-card theme-rfid" data-category="cat-c safety" data-name="rfid attendance system mfrc522 card reader nfc" style="--theme-accent: #059669;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#059669;">26</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 26</div>
+              <h2 class="project-name">RFID Attendance System</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Contactless 13.56 MHz RFID tag-based attendance logger with MFRC522 reader, timestamped check-in/out records, and exportable attendance reports.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">MFRC522 RFID 13.56 MHz Reader</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">SPI: D5(SCK)/D6(MISO)/D7(MOSI)/D8(SS)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Card UID, Timestamp, Attendance Count</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/26-rfid-attendance-system/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p26">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 27: RFID Door Access -->
+      <div class="card project-card theme-door-access" data-category="cat-c safety" data-name="rfid door access keypad solenoid lock nfc security" style="--theme-accent: #4f46e5;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#4f46e5;">27</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 27</div>
+              <h2 class="project-name">RFID Door Access</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Secure RFID + keypad dual-factor authentication door lock controller with solenoid actuator, access log history, and remote unlock capability.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">RC522 + 4x4 Keypad + Solenoid Lock</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">SPI (RC522) / D1-D4 (Keypad) / D0 (Lock)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Auth Status, Access Log, Lock State</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/27-rfid-door-access/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p27">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 28: Smart Dustbin -->
+      <div class="card project-card theme-dustbin" data-category="cat-c automation" data-name="smart dustbin waste ultrasonic ir proximity servo lid fill" style="--theme-accent: #0d9488;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#0d9488;">28</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 28</div>
+              <h2 class="project-name">Smart Dustbin</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Touchless waste bin with IR proximity hand detection, servo-actuated lid, ultrasonic fill-level monitoring, and capacity percentage alerts.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">HC-SR04 Fill + IR Proximity + SG90 Servo</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1/D2 (Trig/Echo) / D5 (IR) / D6 (Servo)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Fill Level (%), Lid State, Hand Detect</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/28-smart-dustbin/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p28">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 29: Fire & Smoke Alert -->
+      <div class="card project-card theme-fire-alert" data-category="cat-c safety environment" data-name="fire smoke alert mq2 flame sensor buzzer alarm" style="--theme-accent: #e11d48;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#e11d48;">29</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 29</div>
+              <h2 class="project-name">Fire &amp; Smoke Alert</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Dual-sensor fire detection combining MQ-2 smoke/gas concentration with IR flame wavelength sensing, audible siren, and emergency web alerts.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">MQ-2 Gas/Smoke + IR Flame Sensor</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">A0 (MQ-2) / D1 (Flame) / D5 (Buzzer)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Smoke PPM, Flame IR, Alarm State</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/29-fire-smoke-alert/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p29">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 30: Intrusion Detection Alarm -->
+      <div class="card project-card theme-intrusion" data-category="cat-c safety" data-name="intrusion detection alarm pir motion piezo siren security" style="--theme-accent: #ea580c;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#ea580c;">30</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 30</div>
+              <h2 class="project-name">Intrusion Detection Alarm</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            PIR-triggered intrusion detection with configurable sensitivity zones, piezo siren alarm, web dashboard alert history, and arm/disarm control.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">HC-SR501 PIR + Piezo Siren</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D2 (PIR) / D5 (Siren) / D1 (LED)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Motion State, Alert Count, Arm Status</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/30-intrusion-detection-alarm/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p30">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 31: Visitor Counter -->
+      <div class="card project-card theme-visitor" data-category="cat-c safety" data-name="visitor counter break beam infrared bidirectional people counting" style="--theme-accent: #7c3aed;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#7c3aed;">31</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 31</div>
+              <h2 class="project-name">Visitor Counter</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Bidirectional dual break-beam visitor counting system with entry/exit discrimination, real-time occupancy tracking, and daily statistics.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Dual IR Break-Beam Sensors (A &amp; B)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1 (Beam A) / D2 (Beam B)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Entry/Exit Count, Occupancy, Daily Total</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/31-visitor-counter/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p31">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 32: Smart Energy Meter -->
+      <div class="card project-card theme-energy" data-category="cat-c energy" data-name="smart energy meter pzem004t ac power voltage current watt kwh" style="--theme-accent: #d97706;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#d97706;">32</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 32</div>
+              <h2 class="project-name">Smart Energy Meter</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            AC mains power monitoring with PZEM-004T sensor measuring voltage, current, active power, energy consumption (kWh), and power factor.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">PZEM-004T AC Power Monitor</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1 (RX) / D2 (TX) — Software Serial</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">V, A, W, kWh, Hz, Power Factor</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/32-smart-energy-meter/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p32">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 33: Battery Voltage Monitor -->
+      <div class="card project-card theme-battery" data-category="cat-c energy" data-name="battery voltage monitor adc divider lithium lead acid soc" style="--theme-accent: #16a34a;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#16a34a;">33</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 33</div>
+              <h2 class="project-name">Battery Voltage Monitor</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Precision battery monitoring with resistive voltage divider, ADC sampling, state-of-charge estimation, and multi-chemistry support (Li-ion/Lead-acid).
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">Precision Voltage Divider + ESP ADC</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">A0 (Voltage Divider Output)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Voltage (V), SoC (%), Chemistry Type</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/33-battery-voltage-monitor/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p33">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 34: Solar Panel Monitor -->
+      <div class="card project-card theme-solar" data-category="cat-c energy environment" data-name="solar panel monitor ina219 photovoltaic power current mppt" style="--theme-accent: #ca8a04;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#ca8a04;">34</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 34</div>
+              <h2 class="project-name">Solar Panel Monitor</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            High-side solar panel telemetry with INA219 power sensor measuring panel voltage, current, power output, and daily energy harvest tracking.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">INA219 High-Side Power Sensor</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">I2C: D1 (SCL) / D2 (SDA)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Panel V, mA, mW, Daily Wh</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/34-solar-panel-monitor/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p34">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 35: Digital Notice Board -->
+      <div class="card project-card theme-noticeboard" data-category="cat-c automation" data-name="digital notice board oled ssd1306 marquee display text" style="--theme-accent: #06b6d4;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#06b6d4;">35</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 35</div>
+              <h2 class="project-name">Digital Notice Board</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            Web-controlled SSD1306 OLED notice board with scrolling marquee text, remote message updates via REST API, and multi-line display layout.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">SSD1306 128×64 OLED Display</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">I2C: D1 (SCL) / D2 (SDA)</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Message Text, Scroll Speed, Display Mode</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/35-digital-notice-board/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p35">Setup</button>
+        </div>
+      </div>
+
+      <!-- PROJECT 36: Smart Room Occupancy -->
+      <div class="card project-card theme-occupancy" data-category="cat-c safety environment" data-name="smart room occupancy mmwave radar ld2410 presence detection" style="--theme-accent: #8b5cf6;">
+        <div>
+          <div class="project-header">
+            <div class="project-avatar">
+              <span style="font-weight:800; font-size:1.1rem; color:#8b5cf6;">36</span>
+            </div>
+            <div class="project-titles">
+              <div class="project-num">Project 36</div>
+              <h2 class="project-name">Smart Room Occupancy</h2>
+            </div>
+          </div>
+          <p class="project-desc">
+            24 GHz mmWave radar presence detection with LD2410 sensor, stationary/moving target discrimination, range gating, and occupancy analytics.
+          </p>
+          <div class="sensor-spec-box">
+            <div class="sensor-spec-item">
+              <span class="spec-label">Primary Hardware</span>
+              <span class="spec-val">HLK-LD2410 24 GHz mmWave Radar</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Interface Pins</span>
+              <span class="spec-val">D1 (RX) / D2 (TX) — Software Serial</span>
+            </div>
+            <div class="sensor-spec-item">
+              <span class="spec-label">Telemetry Metrics</span>
+              <span class="spec-val">Presence, Moving/Still Energy, Distance</span>
+            </div>
+          </div>
+          <div class="project-badges">
+            <span class="badge-sim">&#10003; Simulation Engine</span>
+            <span class="badge-hw">&#9881; ESP8266 REST API</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <a href="projects/36-smart-room-occupancy/index.html" class="btn btn-primary">Open Dashboard</a>
+          <button class="btn btn-subtle" data-modal-open="modal-p36">Setup</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Reusable Setup Modal -->
+  <div id="generic-setup-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 id="setup-modal-title" class="modal-title">Hardware Setup Guide</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <div id="setup-modal-body" class="modal-body" style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" data-modal-close>Got it</button>
+      </div>
+    </div>
   </div>
+
+  <footer style="margin-top: 60px; padding: 32px 0; border-top: 1px solid var(--border-subtle); text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+    <div class="container">
+      <p style="margin: 0 0 6px 0;"><strong>Tech IoT Warriors &middot; 36 Complete Modules</strong></p>
+      <p style="margin: 0;">Category A: Sensors &amp; Monitoring (01–12) &bull; Category B: Automation &amp; Control (13–24) &bull; Category C: Smart Systems (25–36) &bull; ESP8266 REST API</p>
+    </div>
+  </footer>
+
+  <script src="shared/js/common-ui.js"></script>
+  <script>
+    // Search and Filter Logic
+    const searchInput = document.getElementById('project-search');
+    const filterPills = document.querySelectorAll('.category-pill');
+    const cards = document.querySelectorAll('.project-card');
+
+    let currentCategory = 'all';
+    let currentSearch = '';
+
+    function applyFilters() {
+      let visibleCatA = 0;
+      let visibleCatB = 0;
+      let visibleCatC = 0;
+
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category') || '';
+        const name = (card.getAttribute('data-name') || '').toLowerCase();
+        const matchesCategory = (currentCategory === 'all') || cat.includes(currentCategory);
+        const matchesSearch = !currentSearch || name.includes(currentSearch);
+
+        if (matchesCategory && matchesSearch) {
+          card.style.display = 'flex';
+          if (cat.includes('cat-a')) visibleCatA++;
+          if (cat.includes('cat-b')) visibleCatB++;
+          if (cat.includes('cat-c')) visibleCatC++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      const headingA = document.getElementById('heading-cat-a');
+      const headingB = document.getElementById('heading-cat-b');
+      const headingC = document.getElementById('heading-cat-c');
+      if (headingA) headingA.style.display = visibleCatA > 0 ? 'flex' : 'none';
+      if (headingB) headingB.style.display = visibleCatB > 0 ? 'flex' : 'none';
+      if (headingC) headingC.style.display = visibleCatC > 0 ? 'flex' : 'none';
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      currentSearch = e.target.value.toLowerCase().trim();
+      applyFilters();
+    });
+
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        filterPills.forEach(p => p.classList.remove('active'));
+        e.target.classList.add('active');
+        currentCategory = e.target.getAttribute('data-category');
+        applyFilters();
+      });
+    });
+
+    // Setup Guides Dictionary for all 36 projects
+    const projectSetupGuides = {
+  "modal-p01": {
+    "title": "Project 01: TERRASCAN X ELITE Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, HC-SR04 Ultrasonic Sensor, 1k&Omega; & 2k&Omega; resistors (Echo voltage divider).</p><p><strong>Wiring:</strong> VCC &rarr; VIN (5V), GND &rarr; GND, Trig &rarr; D1 (GPIO5), Echo &rarr; 1k/2k divider &rarr; D2 (GPIO4).</p><p><strong>Firmware:</strong> Open <code>projects/01-terrascan-x-elite/firmware/terrascan_x_elite.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p02": {
+    "title": "Project 02: RAINWATCH AI Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, Rain Sensor Board, LM393 Comparator Module.</p><p><strong>Wiring:</strong> VCC &rarr; 3V3, GND &rarr; GND, AO &rarr; A0 (TOUT), DO &rarr; D1 (GPIO5).</p><p><strong>Firmware:</strong> Open <code>projects/02-rainwatch-ai/firmware/rainwatch_ai.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p03": {
+    "title": "Project 03: TerraIQ Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, Capacitive Soil Moisture Sensor v1.2.</p><p><strong>Wiring:</strong> VCC &rarr; 3V3, GND &rarr; GND, AOUT &rarr; A0 (TOUT).</p><p><strong>Firmware:</strong> Open <code>projects/03-terraiq/firmware/terraiq.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p04": {
+    "title": "Project 04: ATMOS AI Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, DHT22 (AM2302) Sensor, 4.7k&Omega; Pull-up Resistor.</p><p><strong>Wiring:</strong> VCC &rarr; 3V3, GND &rarr; GND, DATA &rarr; D4 (GPIO2).</p><p><strong>Firmware:</strong> Open <code>projects/04-atmos-ai/firmware/atmos_ai.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p05": {
+    "title": "Project 05: Smart Air Quality Monitor Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, MQ-135 Gas Sensor, Breadboard, Jumper wires.</p><p><strong>Wiring:</strong> MQ-135 VCC &rarr; VIN (5V), GND &rarr; GND, AOUT &rarr; A0.</p><p><strong>Firmware:</strong> Open <code>projects/05-smart-air-quality-monitor/firmware/air_quality_monitor.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p06": {
+    "title": "Project 06: Gas Leakage Detector Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, MQ-2 or MQ-5 Gas Sensor, Active Buzzer, Red Warning LED.</p><p><strong>Wiring:</strong> MQ-2 VCC &rarr; VIN (5V), GND &rarr; GND, AOUT &rarr; A0, Buzzer &rarr; D5 (GPIO14).</p><p><strong>Firmware:</strong> Open <code>projects/06-gas-leakage-detector/firmware/gas_leakage_detector.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p07": {
+    "title": "Project 07: LDR Light Intensity Monitor Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, Photoresistor (LDR), 10k&Omega; Resistor.</p><p><strong>Wiring:</strong> LDR leg 1 &rarr; 3.3V, LDR leg 2 &rarr; A0 & 10k&Omega; to GND.</p><p><strong>Firmware:</strong> Open <code>projects/07-ldr-light-intensity-monitor/firmware/ldr_light_intensity_monitor.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p08": {
+    "title": "Project 08: Digital Thermometer Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, DS18B20 1-Wire Sensor, 4.7k&Omega; Resistor.</p><p><strong>Wiring:</strong> Pin 1 &rarr; GND, Pin 2 (Data) &rarr; D4 (GPIO2), Pin 3 &rarr; 3.3V. Pull-up resistor across Data and 3.3V.</p><p><strong>Firmware:</strong> Open <code>projects/08-digital-thermometer/firmware/digital_thermometer.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p09": {
+    "title": "Project 09: Water Level Monitor Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, HC-SR04 Sensor, 1k&Omega; & 2k&Omega; resistors.</p><p><strong>Wiring:</strong> Trig &rarr; D1 (GPIO5), Echo &rarr; 1k/2k divider &rarr; D2 (GPIO4).</p><p><strong>Firmware:</strong> Open <code>projects/09-water-level-monitor/firmware/water_level_monitor.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p10": {
+    "title": "Project 10: Water Flow Meter Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, YF-S201 Hall-Effect Flow Sensor.</p><p><strong>Wiring:</strong> Red &rarr; VIN (5V), Black &rarr; GND, Yellow (Pulse) &rarr; D2 (GPIO4).</p><p><strong>Firmware:</strong> Open <code>projects/10-water-flow-meter/firmware/water_flow_meter.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p11": {
+    "title": "Project 11: TDS Water Quality Monitor Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, Analog TDS Sensor Module & Titanium Probe.</p><p><strong>Wiring:</strong> VCC &rarr; 3.3V, GND &rarr; GND, Analog Output &rarr; A0.</p><p><strong>Firmware:</strong> Open <code>projects/11-tds-water-quality-monitor/firmware/tds_water_quality_monitor.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p12": {
+    "title": "Project 12: Vibration & Tilt Monitor Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, MPU6050 6-Axis IMU Module, SW-420 Sensor.</p><p><strong>Wiring:</strong> VCC &rarr; 3.3V, GND &rarr; GND, SCL &rarr; D1 (GPIO5), SDA &rarr; D2 (GPIO4).</p><p><strong>Firmware:</strong> Open <code>projects/12-vibration-tilt-monitor/firmware/vibration_tilt_monitor.ino</code> in Arduino IDE.</p>"
+  },
+  "modal-p13": {
+    "title": "Project 13: Automatic Plant Watering Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, Capacitive Soil Moisture Sensor v1.2, 5V Optocoupled Relay, 5V–12V DC Pump.</p><p><strong>Wiring:</strong> Soil AOUT &rarr; A0, Relay IN &rarr; D1 (GPIO 5), external pump supply.</p><p><strong>Firmware:</strong> Flash <code>projects/13-automatic-plant-watering/firmware/plant_watering.ino</code>.</p>"
+  },
+  "modal-p14": {
+    "title": "Project 14: Smart Water Tank Controller Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, HC-SR04 Ultrasonic Sensor, 5V Relay, 1k&Omega; & 2k&Omega; resistors.</p><p><strong>Wiring:</strong> HC-SR04 Trig &rarr; D1 (GPIO 5), Echo &rarr; 1k/2k divider &rarr; D2 (GPIO 4), Relay IN &rarr; D5 (GPIO 14).</p><p><strong>Firmware:</strong> Flash <code>projects/14-smart-water-tank-controller/firmware/water_tank.ino</code>.</p>"
+  },
+  "modal-p15": {
+    "title": "Project 15: Smart Street Light Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, LDR light sensor, PIR motion sensor, IRLZ44N N-MOSFET.</p><p><strong>Wiring:</strong> LDR &rarr; A0, PIR &rarr; D2 (GPIO 4), MOSFET Gate &rarr; D1 (GPIO 5).</p><p><strong>Firmware:</strong> Flash <code>projects/15-smart-street-light/firmware/street_light.ino</code>.</p>"
+  },
+  "modal-p16": {
+    "title": "Project 16: Wi-Fi Home Automation Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, 4-Channel 5V Optocoupled Relay Board.</p><p><strong>Wiring:</strong> Relays 1–4 &rarr; D1, D2, D5, D6. External 5V to JD-VCC.</p><p><strong>Firmware:</strong> Flash <code>projects/16-wifi-home-automation/firmware/wifi_home_automation.ino</code>.</p>"
+  },
+  "modal-p17": {
+    "title": "Project 17: Fan Speed Controller Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, Logic-level N-MOSFET, 12V DC Fan.</p><p><strong>Wiring:</strong> MOSFET Gate &rarr; D1 (GPIO 5), Fan (-) &rarr; Drain, 12V supply common ground.</p><p><strong>Firmware:</strong> Flash <code>projects/17-fan-speed-controller/firmware/fan_speed_controller.ino</code>.</p>"
+  },
+  "modal-p18": {
+    "title": "Project 18: Smart Exhaust Fan Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, DHT11/22 Sensor, 5V Relay.</p><p><strong>Wiring:</strong> DHT Data &rarr; D4 (GPIO 2), Relay IN &rarr; D1 (GPIO 5).</p><p><strong>Firmware:</strong> Flash <code>projects/18-smart-exhaust-fan/firmware/smart_exhaust_fan.ino</code>.</p>"
+  },
+  "modal-p19": {
+    "title": "Project 19: Automatic Door Controller Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, HC-SR04 Sensor, SG90 Servo Motor.</p><p><strong>Wiring:</strong> Trig &rarr; D1, Echo &rarr; D2 (divider), Servo &rarr; D5 (GPIO 14). Separate 5V servo supply.</p><p><strong>Firmware:</strong> Flash <code>projects/19-automatic-door-controller/firmware/automatic_door.ino</code>.</p>"
+  },
+  "modal-p20": {
+    "title": "Project 20: Servo Motor Web Control Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, SG90 / MG996R Servo, 5V 2A Power Supply.</p><p><strong>Wiring:</strong> Servo PWM &rarr; D5 (GPIO 14), 5V to external supply, GND to common ground.</p><p><strong>Firmware:</strong> Flash <code>projects/20-servo-motor-web-control/firmware/servo_control.ino</code>.</p>"
+  },
+  "modal-p21": {
+    "title": "Project 21: DC Motor Control Panel Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, TB6612FNG or L298N H-Bridge, 12V DC Motor.</p><p><strong>Wiring:</strong> IN1 &rarr; D1, IN2 &rarr; D2, PWM &rarr; D5. VM to 12V motor power.</p><p><strong>Firmware:</strong> Flash <code>projects/21-dc-motor-control-panel/firmware/dc_motor_control.ino</code>.</p>"
+  },
+  "modal-p22": {
+    "title": "Project 22: Stepper Motor Controller Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, A4988 / DRV8825 Driver, Bipolar Stepper Motor.</p><p><strong>Wiring:</strong> STEP &rarr; D1, DIR &rarr; D2, EN &rarr; D5. 100µF capacitor across VMOT/GND.</p><p><strong>Firmware:</strong> Flash <code>projects/22-stepper-motor-controller/firmware/stepper_controller.ino</code>.</p>"
+  },
+  "modal-p23": {
+    "title": "Project 23: Relay Control Dashboard Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, 4-Channel 5V Relay Board, External 5V Power.</p><p><strong>Wiring:</strong> Ch 1–4 &rarr; D1, D2, D5, D6. Active LOW control with optocoupler isolation.</p><p><strong>Firmware:</strong> Flash <code>projects/23-relay-control-dashboard/firmware/relay_dashboard.ino</code>.</p>"
+  },
+  "modal-p24": {
+    "title": "Project 24: Smart Greenhouse Automation Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, DHT22, Capacitive Soil Sensor, Dual Relays, Float Switch.</p><p><strong>Wiring:</strong> DHT &rarr; D4, Soil &rarr; A0, Fan Relay &rarr; D1, Pump Relay &rarr; D2, Float Switch &rarr; D5.</p><p><strong>Firmware:</strong> Flash <code>projects/24-smart-greenhouse-automation/firmware/smart_greenhouse.ino</code>.</p>"
+  },
+  "modal-p25": {
+    "title": "Project 25: Smart Parking Assistant Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, HC-SR04 Ultrasonic Sensor, SG90 Servo Motor (barrier gate).</p><p><strong>Wiring:</strong> HC-SR04 Trig &rarr; D1 (GPIO5), Echo &rarr; voltage divider &rarr; D2 (GPIO4), Servo &rarr; D5 (GPIO14).</p><p><strong>Firmware:</strong> Flash <code>projects/25-smart-parking-assistant/firmware/smart_parking.ino</code>.</p>"
+  },
+  "modal-p26": {
+    "title": "Project 26: RFID Attendance System Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, MFRC522 RFID Reader Module, RFID Tags/Cards.</p><p><strong>Wiring:</strong> SDA &rarr; D8 (GPIO15), SCK &rarr; D5 (GPIO14), MOSI &rarr; D7 (GPIO13), MISO &rarr; D6 (GPIO12), RST &rarr; D3 (GPIO0).</p><p><strong>Firmware:</strong> Flash <code>projects/26-rfid-attendance-system/firmware/rfid_attendance.ino</code>.</p>"
+  },
+  "modal-p27": {
+    "title": "Project 27: RFID Door Access Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, RC522 RFID Reader, 4x4 Matrix Keypad, Solenoid Lock + Relay.</p><p><strong>Wiring:</strong> RC522 SPI (D5-D8), Keypad rows/cols via I2C expander or direct GPIO, Lock relay &rarr; D0.</p><p><strong>Firmware:</strong> Flash <code>projects/27-rfid-door-access/firmware/rfid_door_access.ino</code>.</p>"
+  },
+  "modal-p28": {
+    "title": "Project 28: Smart Dustbin Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, HC-SR04 (fill level), IR Proximity Sensor, SG90 Servo (lid).</p><p><strong>Wiring:</strong> Trig &rarr; D1, Echo &rarr; D2 (divider), IR OUT &rarr; D5, Servo &rarr; D6.</p><p><strong>Firmware:</strong> Flash <code>projects/28-smart-dustbin/firmware/smart_dustbin.ino</code>.</p>"
+  },
+  "modal-p29": {
+    "title": "Project 29: Fire & Smoke Alert Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, MQ-2 Gas/Smoke Sensor, IR Flame Sensor, Active Buzzer.</p><p><strong>Wiring:</strong> MQ-2 AOUT &rarr; A0, Flame DO &rarr; D1 (GPIO5), Buzzer &rarr; D5 (GPIO14).</p><p><strong>Firmware:</strong> Flash <code>projects/29-fire-smoke-alert/firmware/fire_smoke_alert.ino</code>.</p>"
+  },
+  "modal-p30": {
+    "title": "Project 30: Intrusion Detection Alarm Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, HC-SR501 PIR Motion Sensor, Piezo Siren/Buzzer, Status LED.</p><p><strong>Wiring:</strong> PIR OUT &rarr; D2 (GPIO4), Siren &rarr; D5 (GPIO14), LED &rarr; D1 (GPIO5).</p><p><strong>Firmware:</strong> Flash <code>projects/30-intrusion-detection-alarm/firmware/intrusion_alarm.ino</code>.</p>"
+  },
+  "modal-p31": {
+    "title": "Project 31: Visitor Counter Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, 2&times; IR Break-Beam Sensor Pairs (Beam A &amp; Beam B).</p><p><strong>Wiring:</strong> Beam A OUT &rarr; D1 (GPIO5), Beam B OUT &rarr; D2 (GPIO4). VCC &rarr; 3.3V, GND &rarr; GND.</p><p><strong>Firmware:</strong> Flash <code>projects/31-visitor-counter/firmware/visitor_counter.ino</code>.</p>"
+  },
+  "modal-p32": {
+    "title": "Project 32: Smart Energy Meter Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, PZEM-004T V3.0 AC Power Monitor Module.</p><p><strong>Wiring:</strong> PZEM TX &rarr; D1 (GPIO5/RX), PZEM RX &rarr; D2 (GPIO4/TX) via Software Serial. CT clamp around live wire.</p><p><strong>Firmware:</strong> Flash <code>projects/32-smart-energy-meter/firmware/smart_energy_meter.ino</code>.</p>"
+  },
+  "modal-p33": {
+    "title": "Project 33: Battery Voltage Monitor Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, Precision Resistor Voltage Divider (100k&Omega; + 33k&Omega;).</p><p><strong>Wiring:</strong> Battery+ &rarr; 100k &rarr; A0 &rarr; 33k &rarr; GND. Max input: ~16.5V after division.</p><p><strong>Firmware:</strong> Flash <code>projects/33-battery-voltage-monitor/firmware/battery_monitor.ino</code>.</p>"
+  },
+  "modal-p34": {
+    "title": "Project 34: Solar Panel Monitor Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, INA219 High-Side Current/Power Sensor Breakout.</p><p><strong>Wiring:</strong> INA219 SCL &rarr; D1 (GPIO5), SDA &rarr; D2 (GPIO4), VCC &rarr; 3.3V. V+ to panel, V- to load.</p><p><strong>Firmware:</strong> Flash <code>projects/34-solar-panel-monitor/firmware/solar_monitor.ino</code>.</p>"
+  },
+  "modal-p35": {
+    "title": "Project 35: Digital Notice Board Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, SSD1306 128&times;64 I2C OLED Display Module.</p><p><strong>Wiring:</strong> OLED SCL &rarr; D1 (GPIO5), SDA &rarr; D2 (GPIO4), VCC &rarr; 3.3V, GND &rarr; GND.</p><p><strong>Firmware:</strong> Flash <code>projects/35-digital-notice-board/firmware/digital_notice.ino</code>.</p>"
+  },
+  "modal-p36": {
+    "title": "Project 36: Smart Room Occupancy Setup",
+    "content": "<p><strong>Hardware:</strong> NodeMCU ESP8266, HLK-LD2410 24GHz mmWave Radar Presence Sensor.</p><p><strong>Wiring:</strong> LD2410 TX &rarr; D1 (GPIO5/RX), RX &rarr; D2 (GPIO4/TX) via Software Serial, VCC &rarr; 5V, GND &rarr; GND.</p><p><strong>Firmware:</strong> Flash <code>projects/36-smart-room-occupancy/firmware/room_occupancy.ino</code>.</p>"
+  }
+};
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-modal-open^="modal-p"]');
+      if (btn) {
+        const id = btn.getAttribute('data-modal-open');
+        const guide = projectSetupGuides[id];
+        if (guide) {
+          document.getElementById('setup-modal-title').textContent = guide.title;
+          document.getElementById('setup-modal-body').innerHTML = guide.content;
+          CommonUI.openModal('generic-setup-modal');
+        }
+      }
+    });
+  </script>
 </body>
 </html>

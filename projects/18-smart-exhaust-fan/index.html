@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Exhaust Fan — Tech IoT Warriors</title>
+  <meta name="description" content="Automated environmental ventilation based on temperature and humidity thresholds with ESP8266.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-exhaust-fan">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 18 &middot; Smart Exhaust Fan</div>
+          <div class="brand-subtitle">DHT11/22 Sensing &middot; Hysteresis Ventilation &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+
+    <!-- LEFT PANEL: Ventilation Visualization & Metrics -->
+    <div class="left-panel">
+      <!-- Ventilation Duct Stage -->
+      <div class="card vent-stage-card">
+        <div class="card-header-row">
+          <span class="card-title">Exhaust Duct & Louvers</span>
+          <span class="status-pill status-idle" id="exhaust-status-badge">FAN IDLE</span>
+        </div>
+
+        <div class="vent-scene">
+          <div class="duct-housing">
+            <!-- Louver slats -->
+            <div class="louver-grille" id="louver-grille">
+              <div class="louver-slat"></div>
+              <div class="louver-slat"></div>
+              <div class="louver-slat"></div>
+              <div class="louver-slat"></div>
+            </div>
+            <!-- Spinning Impeller behind grille -->
+            <div class="exhaust-impeller" id="exhaust-impeller">
+              <svg width="140" height="140" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="46" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
+                <g id="exhaust-blades" class="exhaust-blades">
+                  <path d="M50 50 Q60 25 75 20 Q65 40 50 50" fill="#0d9488"/>
+                  <path d="M50 50 Q60 25 75 20 Q65 40 50 50" fill="#0d9488" transform="rotate(90 50 50)"/>
+                  <path d="M50 50 Q60 25 75 20 Q65 40 50 50" fill="#0d9488" transform="rotate(180 50 50)"/>
+                  <path d="M50 50 Q60 25 75 20 Q65 40 50 50" fill="#0d9488" transform="rotate(270 50 50)"/>
+                  <circle cx="50" cy="50" r="12" fill="#0f172a"/>
+                </g>
+              </svg>
+            </div>
+            <!-- Airflow Streamlines -->
+            <div class="airflow-particles" id="airflow-particles"></div>
+          </div>
+
+          <div class="ambient-indicators">
+            <div class="indicator-badge">
+              <span class="badge-label">TEMP</span>
+              <span class="badge-value" id="disp-temp">25.0 °C</span>
+            </div>
+            <div class="indicator-badge">
+              <span class="badge-label">HUMIDITY</span>
+              <span class="badge-value" id="disp-hum">55 %</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Summary -->
+      <div class="card">
+        <span class="card-title">Environmental Telemetry</span>
+        <div class="metrics-grid" style="margin-top:14px;">
+          <div class="metric-card">
+            <div class="metric-label">Temperature</div>
+            <div class="metric-val" id="m-temp">25.0 °C</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Relative Humidity</div>
+            <div class="metric-val" id="m-hum">55 %</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Control Mode</div>
+            <div class="metric-val" id="m-mode">AUTO</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Relay Output</div>
+            <div class="metric-val" id="m-relay">DE-ENERGIZED</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trend Chart -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Climate Trend (Temp & Humidity)</span>
+          <span class="meta-text" id="chart-pts">0 pts</span>
+        </div>
+        <canvas id="exhaust-chart" height="120" style="width:100%;display:block;"></canvas>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Simulation Controls & Hardware Connection -->
+    <div class="right-panel">
+
+      <!-- Simulation Workbench -->
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Simulation Workbench</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" id="mode-auto-btn" onclick="setAutoMode(true)">Auto</button>
+            <button class="btn btn-sm btn-subtle" id="mode-man-btn" onclick="setAutoMode(false)">Manual</button>
+          </div>
+        </div>
+
+        <!-- Temperature Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <label class="ctrl-label" for="slider-temp" style="margin-bottom:0;">Simulated Temperature</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="slider-temp-disp">25 °C</span>
+          </div>
+          <input type="range" id="slider-temp" class="slider" min="10" max="50" value="25" oninput="onTempInput(this.value)">
+        </div>
+
+        <!-- Humidity Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <label class="ctrl-label" for="slider-hum" style="margin-bottom:0;">Simulated Humidity</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="slider-hum-disp">55 %</span>
+          </div>
+          <input type="range" id="slider-hum" class="slider" min="20" max="95" value="55" oninput="onHumInput(this.value)">
+        </div>
+
+        <!-- Threshold Settings -->
+        <div class="control-group">
+          <span class="ctrl-label">Activation Thresholds</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <span class="meta-text">Temp Cut-in (°C)</span>
+              <input type="number" id="thresh-temp" class="text-input" value="30" min="20" max="45" onchange="onThreshChange()">
+            </div>
+            <div>
+              <span class="meta-text">Humidity Cut-in (%)</span>
+              <input type="number" id="thresh-hum" class="text-input" value="70" min="30" max="90" onchange="onThreshChange()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual Fan Toggle (enabled only in Manual Mode) -->
+        <div class="control-group" id="manual-toggle-group" style="display:none;">
+          <span class="ctrl-label">Manual Fan Override</span>
+          <button class="btn btn-primary" id="btn-fan-override" onclick="toggleManualFan()">Turn Fan ON</button>
+        </div>
+
+        <!-- Scenarios -->
+        <div class="control-group">
+          <span class="ctrl-label">Environmental Presets</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" onclick="applyPreset('comfortable')">Comfortable (24°C / 50%)</button>
+            <button class="btn btn-sm btn-subtle" onclick="applyPreset('steamy')">Steamy Shower (29°C / 85%)</button>
+            <button class="btn btn-sm btn-subtle" onclick="applyPreset('hotkitchen')">Hot Kitchen (34°C / 65%)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Controls -->
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">ESP8266 Hardware Link</span>
+          <span class="status-pill status-idle" id="hw-conn-status">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label" for="hw-ip">NodeMCU IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Event History -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Ventilation Activity Log</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list">
+          <div class="event-empty">No ventilation actions recorded.</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup — Project 18: Smart Exhaust Fan</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, DHT11 or DHT22 Temperature & Humidity Sensor, 5V Opto-isolated Relay module, 10kΩ pull-up resistor.</p>
+        <p><strong>Wiring:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>DHT DATA &rarr; D4 (GPIO 2) with 10k pull-up to 3.3V</li>
+          <li>Relay IN &rarr; D1 (GPIO 5) — Active LOW</li>
+          <li>Relay VCC &rarr; 5V (VIN), Relay GND &rarr; GND</li>
+          <li>Fan power routed through Relay COM & NO contacts</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/smart_exhaust_fan.ino</code> via Arduino IDE.</p>
+        <p><strong>Hysteresis:</strong> Fan automatically activates when Temperature &gt; threshold OR Humidity &gt; threshold. Shuts off only when both parameters drop 2.0°C and 5% RH below thresholds to prevent rapid relay cycling.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fan Speed Controller — Tech IoT Warriors</title>
+  <meta name="description" content="DC fan PWM speed control and tachometer telemetry with ESP8266 NodeMCU.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-fan-controller">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 17 &middot; Fan Speed Controller</div>
+          <div class="brand-subtitle">PWM MOSFET Driver &middot; Dynamic RPM Telemetry &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+
+    <!-- LEFT PANEL: Animated Fan & Metrics -->
+    <div class="left-panel">
+      <!-- Fan Visual Stage Card -->
+      <div class="card fan-stage-card">
+        <div class="card-header-row">
+          <span class="card-title">Fan Rotor Assembly</span>
+          <span class="status-pill status-idle" id="fan-state-badge">STOPPED</span>
+        </div>
+
+        <div class="fan-vis-container">
+          <div class="fan-housing">
+            <svg id="fan-svg" class="fan-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Outer Ring -->
+              <circle cx="100" cy="100" r="92" fill="none" stroke="#cbd5e1" stroke-width="6"/>
+              <circle cx="100" cy="100" r="86" fill="#f8fafc"/>
+              <!-- Rotor Center Hub -->
+              <g id="fan-blades-group" class="fan-blades">
+                <!-- 5 aerodynamic blades -->
+                <path d="M100 100 Q120 70 145 60 Q135 90 100 100" fill="#0284c7" opacity="0.85"/>
+                <path d="M100 100 Q130 120 145 145 Q115 135 100 100" fill="#0284c7" opacity="0.85" transform="rotate(72 100 100)"/>
+                <path d="M100 100 Q130 120 145 145 Q115 135 100 100" fill="#0284c7" opacity="0.85" transform="rotate(144 100 100)"/>
+                <path d="M100 100 Q130 120 145 145 Q115 135 100 100" fill="#0284c7" opacity="0.85" transform="rotate(216 100 100)"/>
+                <path d="M100 100 Q130 120 145 145 Q115 135 100 100" fill="#0284c7" opacity="0.85" transform="rotate(288 100 100)"/>
+                <!-- Center Cap -->
+                <circle cx="100" cy="100" r="24" fill="#0f172a"/>
+                <circle cx="100" cy="100" r="10" fill="#38bdf8"/>
+              </g>
+            </svg>
+          </div>
+          <div class="fan-rpm-overlay">
+            <div class="big-rpm" id="live-rpm">0</div>
+            <div class="rpm-label">RPM (ESTIMATED)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Metrics Grid -->
+      <div class="card">
+        <span class="card-title">Telemetry & Motor Health</span>
+        <div class="metrics-grid" style="margin-top:14px;">
+          <div class="metric-card">
+            <div class="metric-label">Target Speed</div>
+            <div class="metric-val" id="m-target-spd">0 %</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">PWM Duty Cycle</div>
+            <div class="metric-val" id="m-pwm-val">0 / 1023</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Motor Voltage</div>
+            <div class="metric-val" id="m-voltage">0.0 V</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Airflow Velocity</div>
+            <div class="metric-val" id="m-airflow">0.0 m/s</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Speed History Chart -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Speed Response Curve</span>
+          <span class="meta-text" id="chart-pts">0 pts</span>
+        </div>
+        <canvas id="fan-chart" height="120" style="width:100%;display:block;"></canvas>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Speed Control & Presets -->
+    <div class="right-panel">
+
+      <!-- Speed Workbench -->
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Speed Regulation</span>
+          <button class="btn btn-sm btn-subtle" onclick="resetFan()">Stop Fan</button>
+        </div>
+
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <label class="ctrl-label" for="speed-slider" style="margin-bottom:0;">PWM Duty / Speed</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="speed-display">0 %</span>
+          </div>
+          <input type="range" id="speed-slider" class="slider" min="0" max="100" value="0" oninput="onSpeedSliderInput(this.value)">
+        </div>
+
+        <div class="control-group">
+          <span class="ctrl-label">Speed Level Presets</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle preset-btn active" id="btn-p0" onclick="setSpeedPreset(0)">0% (Off)</button>
+            <button class="btn btn-sm btn-subtle preset-btn" id="btn-p25" onclick="setSpeedPreset(25)">25% (Silent)</button>
+            <button class="btn btn-sm btn-subtle preset-btn" id="btn-p50" onclick="setSpeedPreset(50)">50% (Eco)</button>
+            <button class="btn btn-sm btn-subtle preset-btn" id="btn-p75" onclick="setSpeedPreset(75)">75% (Turbo)</button>
+            <button class="btn btn-sm btn-subtle preset-btn" id="btn-p100" onclick="setSpeedPreset(100)">100% (Max)</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="ctrl-label">Inertia Physics Model</span>
+          <div class="meta-text">Realistic rotor spin-up and aerodynamic braking curves are computed at 30 fps.</div>
+        </div>
+      </div>
+
+      <!-- Hardware Controls -->
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">ESP8266 Hardware Link</span>
+          <span class="status-pill status-idle" id="hw-conn-status">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label" for="hw-ip">NodeMCU IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Operation History -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Control Actions</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list">
+          <div class="event-empty">No control events recorded.</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup — Project 17: Fan Speed Controller</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, Logic-Level N-Channel MOSFET module (IRLZ44N or IRF520), 12V DC brushless fan, 12V external power supply.</p>
+        <p><strong>Wiring:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>MOSFET SIG (Gate) &rarr; D1 (GPIO 5)</li>
+          <li>MOSFET VCC/GND logic &rarr; 3.3V and GND</li>
+          <li>Fan (+) &rarr; 12V Supply (+)</li>
+          <li>Fan (-) &rarr; MOSFET Drain (VIN-)</li>
+          <li>12V Supply (-) &rarr; Common GND</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/fan_speed_controller.ino</code>. Uses 1 kHz hardware PWM timer.</p>
+        <p><strong>Caution:</strong> Never attempt to control high-voltage AC ceiling fans directly using a simple DC MOSFET!</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/simulation-utils.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

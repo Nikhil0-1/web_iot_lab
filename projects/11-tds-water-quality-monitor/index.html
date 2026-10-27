@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TDS Water Quality Monitor — Tech IoT Warriors</title>
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-tds-quality">
+
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Return to Launcher">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </a>
+        <div>
+          <div>Project 11 &middot; TDS Water Quality Monitor</div>
+          <div class="brand-subtitle">Electrolytic Conductivity Probe &middot; WHO Standard &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch to another sensor (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn">Hardware</button>
+        </div>
+        <div id="sensor-health-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span>Active</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-setup-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero Header Banner -->
+    <div class="hero-banner">
+      <div class="hero-banner-main">
+        <div class="hero-project-badge">🧪</div>
+        <div class="hero-title-group">
+          <h1>TDS Water Quality &amp; Purity Analyzer</h1>
+          <p>
+            <span>Electrolytic Conductivity Probe &middot; Dual Titanium Pins</span>
+            <span>&bull;</span>
+            <span>WHO Drinking Water Guidelines (0–1000 PPM)</span>
+            <span>&bull;</span>
+            <span style="font-family: var(--font-mono); font-weight: 600;">Calibrated @ 25&deg;C Reference</span>
+          </p>
+        </div>
+      </div>
+      <div class="hero-metrics-pill">
+        <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Purity Tier</span>
+        <div style="margin-top: 4px;">
+          <span id="water-tier-pill" class="status-pill status-ok">Clean Tap Water</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Instrument Showcase Stage -->
+    <section class="tds-stage-card">
+      <!-- Dual Instrument Assembly (Gauge + Immersion Beaker) -->
+      <div class="tds-visualizer-container">
+        <!-- Semi-circle Galvanometer Arc Gauge -->
+        <div class="tds-gauge-shell">
+          <div class="gauge-arc-bg"></div>
+          <div id="gauge-needle" class="gauge-needle"></div>
+          <div class="gauge-pivot"></div>
+          <div style="position: absolute; bottom: 4px; font-size: 0.68rem; font-family: var(--font-mono); color: var(--text-muted);">
+            0 PPM &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1000 PPM
+          </div>
+        </div>
+
+        <!-- Borosilicate Immersion Beaker -->
+        <div class="tds-beaker-wrapper">
+          <div class="beaker-probe"></div>
+          <div id="beaker-fluid" class="beaker-fluid"></div>
+        </div>
+      </div>
+
+      <!-- Editorial Scientific Telemetry -->
+      <div class="tds-editorial-panel">
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Total Dissolved Solids (Mineral Concentration)</span>
+          <div class="tds-main-metric">
+            <span id="primary-tds-value" class="tds-large-num">--</span>
+            <span style="font-size: 1.8rem; font-weight: 600; color: var(--text-muted);">PPM</span>
+          </div>
+        </div>
+
+        <!-- Telemetry Strip -->
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; padding: 14px 0; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);">
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Electrode Potential</div>
+            <div id="stat-voltage" style="margin-top: 4px; font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+              --
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Raw ADC (A0 Pin)</div>
+            <div id="stat-raw-adc" style="margin-top: 4px; font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+              --
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Probe Continuity</div>
+            <div style="margin-top: 4px;">
+              <span id="reading-validity-pill" class="status-pill status-ok">Reading Valid</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Last Reading</div>
+            <div id="last-updated-text" style="margin-top: 4px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
+              --:--:--
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+          <strong>Scientific Limitation Notice:</strong> TDS quantifies dissolved inorganic salts (calcium, magnesium, potassium, sodium, bicarbonates, chlorides, sulfates). It is an indicator of mineralization and conductivity, <em>not</em> biological sterility or freedom from organic toxins/pathogens.
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-time Chart Card -->
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <span class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          Dissolved Solids Telemetry Trend (PPM)
+        </span>
+        <button id="btn-export-csv" class="btn btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+      <div class="chart-container" style="height: 220px;">
+        <canvas id="tds-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Compact Instrument Control Deck -->
+    <div class="instrument-deck" style="margin-top: 24px;">
+      <!-- Simulation Controls Panel -->
+      <div id="sim-controls-panel" style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em;">Aqueous Electrolyte Simulation Engine</span>
+          <span class="postal-badge">Virtual Beaker Chamber</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label" for="sim-scenario-select">Fluid Chemistry Scenario</label>
+            <select id="sim-scenario-select" class="input-field">
+              <option value="pure_ro">Pure RO / Demineralized (&lt; 50 PPM)</option>
+              <option value="tap_clean" selected>Municipal Clean Tap (150–250 PPM)</option>
+              <option value="hard_tap">Hard Well / Mineral Water (350–550 PPM)</option>
+              <option value="brackish">High Salinity / Brackish (&gt; 750 PPM)</option>
+              <option value="fault">Probe Dry in Air / Lead Detached</option>
+            </select>
+          </div>
+
+          <div class="slider-control" style="margin-bottom: 0;">
+            <div class="slider-header" style="margin-bottom: 4px;">
+              <span class="input-label" style="margin-bottom: 0;">Manual TDS Override</span>
+              <span id="slider-val-label" style="font-family: var(--font-mono); font-weight: 600; font-size: 0.8rem;">180 PPM</span>
+            </div>
+            <input type="range" id="tds-override-slider" class="range-input" min="0" max="1000" step="10" value="180">
+          </div>
+
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label" for="sim-speed-select">Simulation Speed</label>
+            <select id="sim-speed-select" class="input-field">
+              <option value="0.5">0.5x (Slow)</option>
+              <option value="1.0" selected>1.0x (Real-time)</option>
+              <option value="2.0">2.0x (Fast)</option>
+              <option value="5.0">5.0x (High-speed)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-sim-start" class="btn btn-sm btn-primary" style="flex: 1;">Resume</button>
+            <button id="btn-sim-pause" class="btn btn-sm" style="flex: 1;">Pause</button>
+            <button id="btn-sim-reset" class="btn btn-sm btn-subtle">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Controls Panel -->
+      <div id="hw-controls-panel" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); text-transform: uppercase;">ESP8266 REST Hardware Link</span>
+          <span class="postal-badge">Physical Sensor</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; align-items: center;">
+          <input type="text" id="hw-device-ip" class="input-field" value="http://192.168.4.1" placeholder="http://192.168.4.1">
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-test-hw" class="btn btn-sm" style="flex: 1;">Test</button>
+            <button id="btn-connect-hw" class="btn btn-sm btn-primary" style="flex: 1;">Connect</button>
+            <button id="btn-disconnect-hw" class="btn btn-sm btn-subtle">Cut</button>
+          </div>
+          <div id="hw-test-result" style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); text-align: right;">
+            Ready to link.
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnostics Footer Bar -->
+      <div class="diagnostics-bar" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-light);">
+        <div>Diagnostics: <span id="diagnostics-msg" style="color: var(--text-main); font-weight: 600;">Electrode Bridge Active &bull; Ready</span></div>
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">Analog A0 Transducer &bull; ESP8266 REST Protocol</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-setup-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">TDS Water Quality Sensor Hardware Setup</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+        <h4 style="color: var(--text-main); margin-bottom: 8px;">1. Wiring Connections:</h4>
+        <ul style="margin-left: 20px; margin-bottom: 14px;">
+          <li><strong>VCC:</strong> Connect to 3.3V or 5V (depending on adapter module).</li>
+          <li><strong>GND:</strong> Connect to ESP8266 GND.</li>
+          <li><strong>AOUT (Analog):</strong> Connect to ESP8266 A0 pin.</li>
+        </ul>
+        <h4 style="color: var(--text-main); margin-bottom: 8px;">2. Firmware Configuration:</h4>
+        <ol style="margin-left: 20px; margin-bottom: 14px;">
+          <li>Open <code>firmware/tds_water_quality_monitor.ino</code> in Arduino IDE.</li>
+          <li>Set reference voltage and temperature coefficient in code.</li>
+          <li>Upload to NodeMCU 1.0 at 115200 baud.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/chart-utils.js"></script>
+  <script src="../../shared/js/simulation-utils.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="config/config.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/hardware.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

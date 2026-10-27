@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project 04 · ATMOS AI — Tech IoT Warriors</title>
+  <meta name="description" content="Precision ambient climate telemetry, heat index, and thermal comfort monitoring with ESP8266 and DHT22.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-atmos">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Return to Laboratory Hub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </a>
+        <div>
+          <div>Project 04 &middot; ATMOS AI</div>
+          <div class="brand-subtitle">Atmospheric Climate &amp; Comfort &middot; DHT22 Sensor &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Sensor (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <button id="btn-toggle-unit" class="btn btn-sm btn-subtle" style="font-weight:600;">Switch to °F</button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn">Hardware</button>
+        </div>
+        <div id="sensor-health-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span>Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-setup-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container atmos-layout">
+
+    <!-- LEFT COLUMN: Dual Instruments & Biometeorology HUD -->
+    <div class="atmos-stage-card">
+      <div class="atmos-header">
+        <div class="atmos-title">
+          <span class="live-dot" style="background:#0284c7;"></span>
+          Atmospheric Telemetry
+        </div>
+        <span style="font-size:0.75rem; color:#94a3b8; font-weight:600;">DIGITAL CAPACITIVE / THERMISTOR</span>
+      </div>
+
+      <!-- Gauges Container -->
+      <div class="atmos-gauges-container">
+        <!-- Temp Gauge -->
+        <div class="gauge-panel">
+          <div class="gauge-canvas-wrapper">
+            <canvas id="gaugeCanvasTemp" class="gauge-canvas"></canvas>
+            <div class="gauge-center-text">
+              <span id="val-temp" class="gauge-val">23.5</span>
+              <span id="val-temp-unit" class="gauge-unit">°C</span>
+            </div>
+          </div>
+          <div class="gauge-label">Dry Bulb Temperature</div>
+        </div>
+
+        <!-- Humid Gauge -->
+        <div class="gauge-panel">
+          <div class="gauge-canvas-wrapper">
+            <canvas id="gaugeCanvasHumid" class="gauge-canvas"></canvas>
+            <div class="gauge-center-text">
+              <span id="val-humid" class="gauge-val">48.0</span>
+              <span class="gauge-unit">% RH</span>
+            </div>
+          </div>
+          <div class="gauge-label">Relative Humidity</div>
+        </div>
+      </div>
+
+      <!-- Comfort Index Banner -->
+      <div id="comfort-banner" class="comfort-banner ideal">
+        <span id="comfort-text">IDEAL THERMAL COMFORT</span>
+        <span style="font-size:0.75rem; opacity:0.85;">ASHRAE 55 Standards</span>
+      </div>
+
+      <!-- Heat Index & Dew Point HUD -->
+      <div class="atmos-hud-row">
+        <div class="atmos-hud-box">
+          <div class="atmos-hud-lbl">Apparent Heat Index</div>
+          <div id="val-heat-index" class="atmos-hud-val">23.5°C</div>
+        </div>
+        <div class="atmos-hud-box">
+          <div class="atmos-hud-lbl">Condensation Dew Point</div>
+          <div id="val-dew-point" class="atmos-hud-val">12.0°C</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Simulation Controls, Trends & Connectivity -->
+    <div class="controls-panel">
+
+      <!-- Preset Scenarios -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Climate Scenarios</span>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Presets</span>
+        </div>
+        <div class="scenario-grid">
+          <button class="scenario-btn active" data-scenario="office">Temperate Office</button>
+          <button class="scenario-btn" data-scenario="greenhouse">Tropical Nursery</button>
+          <button class="scenario-btn" data-scenario="freeze">Winter Freeze</button>
+          <button class="scenario-btn" data-scenario="desert">Arid Desert</button>
+        </div>
+
+        <!-- Sliders -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Temperature Adjustment</span>
+            <span id="lbl-slider-temp">23.5°C</span>
+          </div>
+          <input type="range" id="slider-temp" class="control-slider" min="-10" max="50" step="0.5" value="23.5">
+        </div>
+
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Relative Humidity</span>
+            <span id="lbl-slider-humid">48%</span>
+          </div>
+          <input type="range" id="slider-humid" class="control-slider" min="5" max="95" value="48">
+        </div>
+
+        <div class="sim-actions">
+          <button id="btn-pause" class="btn btn-sm btn-subtle">Pause</button>
+          <button id="btn-reset" class="btn btn-sm btn-subtle">Reset</button>
+        </div>
+      </div>
+
+      <!-- Trend Chart -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Climate History (Temp &amp; Humidity)</span>
+          <button id="btn-export-csv" class="btn btn-xs btn-subtle">Export CSV</button>
+        </div>
+        <div class="chart-container">
+          <canvas id="historyCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Hardware Integration Card -->
+      <div id="hw-connection-panel" class="panel-card" style="display:none;">
+        <div class="panel-title">
+          <span>ESP8266 Live Connection</span>
+          <span id="hw-status-text" style="font-size:0.75rem; color:var(--text-muted);">Standby</span>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <input type="text" id="device-ip-input" class="search-input" style="flex:1;" placeholder="http://192.168.4.1" value="http://192.168.4.1">
+          <button id="btn-connect-hw" class="btn btn-primary btn-sm">Connect</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Setup Modal Dialog -->
+  <div id="hw-setup-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Hardware Setup: ATMOS AI</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <div class="modal-body" style="font-size:0.875rem; line-height:1.6; color:var(--text-secondary);">
+        <p><strong>Required Hardware:</strong> ESP8266 NodeMCU, DHT22 (AM2302) Temperature &amp; Humidity Sensor, 4.7kΩ–10kΩ pull-up resistor (if using bare sensor without PCB module).</p>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:16px; font-size:0.82rem;">
+          <thead>
+            <tr style="background:#f1f5f9; text-align:left;">
+              <th style="padding:8px; border:1px solid #cbd5e1;">DHT22 Pin</th>
+              <th style="padding:8px; border:1px solid #cbd5e1;">ESP8266 Pin</th>
+              <th style="padding:8px; border:1px solid #cbd5e1;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">VCC</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">3V3</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">3.3V DC Power</td>
+            </tr>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">GND</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">GND</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">Ground</td>
+            </tr>
+            <tr>
+              <td style="padding:8px; border:1px solid #cbd5e1;">DATA</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">D4 (GPIO 2)</td>
+              <td style="padding:8px; border:1px solid #cbd5e1;">Single-bus bidirectional digital data line</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" data-modal-close>Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

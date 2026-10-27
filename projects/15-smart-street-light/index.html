@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Street Light â€” Tech IoT Warriors</title>
+  <meta name="description" content="Automatic street light control based on ambient light with ESP8266 NodeMCU.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-street-light">
+
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
+        <div>
+          <div>Project 15 &middot; Smart Street Light</div>
+          <div class="brand-subtitle">LDR Ambient Sensor &middot; PWM LED Driver &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok"><span class="pulse-dot"></span><span id="status-text">Simulating</span></div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <div class="left-panel">
+
+      <!-- Night Scene -->
+      <div class="card scene-card">
+        <div class="night-scene" id="night-scene">
+          <!-- Sky gradient (changes with ambient light) -->
+          <div class="sky-bg" id="sky-bg"></div>
+          <!-- Stars -->
+          <div class="stars" id="stars">
+            <span class="star" style="left:15%;top:20%"></span>
+            <span class="star" style="left:30%;top:10%"></span>
+            <span class="star" style="left:55%;top:15%"></span>
+            <span class="star" style="left:70%;top:25%"></span>
+            <span class="star" style="left:85%;top:12%"></span>
+            <span class="star" style="left:45%;top:30%"></span>
+          </div>
+          <!-- Moon -->
+          <div class="moon" id="moon"></div>
+          <!-- Road -->
+          <div class="road"></div>
+          <!-- Street light pole + lamp -->
+          <div class="street-pole">
+            <div class="pole-shaft"></div>
+            <div class="pole-arm"></div>
+            <div class="lamp-housing" id="lamp-housing">
+              <div class="lamp-bulb" id="lamp-bulb"></div>
+              <div class="lamp-glow" id="lamp-glow"></div>
+            </div>
+          </div>
+          <!-- Ground cone of light -->
+          <div class="light-cone" id="light-cone"></div>
+
+          <!-- Overlay labels -->
+          <div class="scene-overlay">
+            <div class="scene-metric">
+              <span class="sm-val" id="sc-lux">--</span>
+              <span class="sm-unit">lux</span>
+              <span class="sm-lbl">Ambient</span>
+            </div>
+            <div class="scene-metric">
+              <span class="sm-val" id="sc-bright">--</span>
+              <span class="sm-unit">%</span>
+              <span class="sm-lbl">Brightness</span>
+            </div>
+            <div id="light-state-badge" class="light-badge off">OFF</div>
+          </div>
+        </div>
+
+        <div class="pump-mode-row">
+          <div class="pump-status-chip">
+            <span class="pump-dot" id="light-dot"></span>
+            <span id="light-label">Light OFF</span>
+          </div>
+          <div class="mode-chip-row">
+            <button id="btn-auto" class="mode-chip active" onclick="setAutoMode(true)">Auto</button>
+            <button id="btn-manual" class="mode-chip" onclick="setAutoMode(false)">Manual</button>
+          </div>
+          <button id="btn-light-manual" class="btn btn-sm" onclick="manualLightToggle()" style="display:none;">Toggle</button>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-box"><span class="metric-label">Ambient Light</span><div class="metric-value-row"><span class="metric-value" id="m-lux">--</span><span class="metric-unit">lux</span></div><span class="metric-sub" id="m-time">--</span></div>
+        <div class="metric-box"><span class="metric-label">Brightness</span><div class="metric-value-row"><span class="metric-value" id="m-bright">--</span><span class="metric-unit">%</span></div><span class="metric-sub" id="m-bright-status">--</span></div>
+        <div class="metric-box"><span class="metric-label">Threshold</span><div class="metric-value-row"><span class="metric-value" id="m-thresh">300</span><span class="metric-unit">lux</span></div><span class="metric-sub">Light on below</span></div>
+        <div class="metric-box"><span class="metric-label">Motion</span><div class="metric-value-row"><span class="metric-value" id="m-motion">None</span></div><span class="metric-sub">PIR status</span></div>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Simulation Controls</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" id="btn-pause" onclick="togglePause()">Pause</button>
+            <button class="btn btn-sm btn-subtle" onclick="resetSim()">Reset</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="ctrl-label">Ambient Light <span id="lbl-lux">500</span> lux</label>
+          <input type="range" id="sl-lux" min="0" max="2000" value="500" class="slider"
+            oninput="lightState.targetLux=+this.value;document.getElementById('lbl-lux').textContent=this.value">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Light Threshold <span id="lbl-thresh">300</span> lux</label>
+          <input type="range" id="sl-thresh" min="50" max="1000" value="300" class="slider"
+            oninput="lightState.threshold=+this.value;document.getElementById('lbl-thresh').textContent=this.value;document.getElementById('m-thresh').textContent=this.value">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Brightness (Manual) <span id="lbl-bright">100</span>%</label>
+          <input type="range" id="sl-bright" min="10" max="100" value="100" class="slider"
+            oninput="lightState.manualBrightness=+this.value;document.getElementById('lbl-bright').textContent=this.value">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Scenario Presets</label>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" onclick="setScenario('day')">Daytime</button>
+            <button class="btn btn-sm btn-subtle" onclick="setScenario('dusk')">Dusk</button>
+            <button class="btn btn-sm btn-subtle" onclick="setScenario('night')">Night</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label style="display:flex;align-items:center;gap:10px;font-size:0.83rem;font-weight:600;color:var(--text-secondary);cursor:pointer;">
+            <input type="checkbox" id="chk-motion" onchange="lightState.motionActive=this.checked" style="accent-color:var(--theme-accent);width:16px;height:16px;">
+            Simulate Motion Detection
+          </label>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Simulation Speed</label>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle speed-btn active" onclick="setSpeed(1,this)">1Ã—</button>
+            <button class="btn btn-sm btn-subtle speed-btn" onclick="setSpeed(3,this)">3Ã—</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">Hardware Connection</span>
+          <span id="hw-conn-status" class="status-pill status-idle">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">ESP8266 IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100">
+            <button class="btn btn-sm" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div id="hw-error-msg" class="error-msg" style="display:none;"></div>
+        <div id="hw-last-seen" class="meta-text" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header-row"><span class="card-title">Ambient Light Trend</span><span class="meta-text" id="chart-pts">0 pts</span></div>
+        <canvas id="lux-chart" height="110" style="width:100%;display:block;"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header-row"><span class="card-title">Light Events</span><button class="btn btn-sm btn-subtle" onclick="clearEvents()">Clear</button></div>
+        <div id="event-list" class="event-list"><div class="event-empty">No events yet.</div></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup â€” Project 15: Smart Street Light</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Hardware:</strong> NodeMCU, LDR+10kÎ© divider â†’ A0, N-CH MOSFET (IRLZ44N) â†’ D1, LED module, PIR â†’ D5 (optional).</p>
+        <p><strong>Note:</strong> PWM dimming requires MOSFET driver â€” do not use a plain relay for dimming.</p>
+        <p><strong>Firmware:</strong> Flash <code>firmware/street_light.ino</code>. Adjust LDR threshold in firmware constants.</p>
+        <p><strong>Energy estimates</strong> assume 5W LED. Adjust <code>LED_WATTAGE</code> constant for your actual load.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/simulation-utils.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

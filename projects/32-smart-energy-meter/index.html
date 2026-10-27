@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Energy Meter — Tech IoT Warriors</title>
+  <meta name="description" content="AC electrical energy monitor with PZEM-004T telemetry, power factor tracking, and tariff cost calculation.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-energy-meter">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 32 &middot; Smart Energy Meter</div>
+          <div class="brand-subtitle">PZEM-004T v3.0 &middot; True RMS AC Power &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: High-Voltage Power Gauge & Real-Time Waveform -->
+    <div class="left-panel">
+      <!-- Master Electrical Metrics -->
+      <div class="metric-row">
+        <div class="metric-box">
+          <span class="metric-label">RMS Voltage</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-voltage">228.4</span>
+            <span class="metric-unit">V AC</span>
+          </div>
+          <div class="meta-text" id="val-freq">50.0 Hz Line Freq</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Load Current</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-current">2.15</span>
+            <span class="metric-unit">A</span>
+          </div>
+          <div class="meta-text">CT Sensor Coil</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Active Power</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-power" style="color:#d97706;">491.0</span>
+            <span class="metric-unit">W</span>
+          </div>
+          <div class="meta-text" id="val-pf">PF: 0.98 Lagging</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Cumulative Energy</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-energy" style="color:#0284c7;">12.84</span>
+            <span class="metric-unit">kWh</span>
+          </div>
+          <div class="meta-text" id="val-cost">Est. Cost: $2.31</div>
+        </div>
+      </div>
+
+      <!-- Live AC Power Trend Chart -->
+      <div class="card power-chart-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Real-Time Active Power Profile</span>
+            <div class="meta-text">True RMS Wattage &middot; 1.5s Sampling Resolution</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" onclick="resetAccumulator()">Reset Energy</button>
+          </div>
+        </div>
+
+        <div class="power-canvas-wrap">
+          <canvas id="energy-chart-canvas" width="680" height="240"></canvas>
+        </div>
+
+        <!-- Simulation Scenarios -->
+        <div class="scenario-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Simulate Electrical Load:</span>
+          <button class="btn btn-sm btn-subtle" onclick="setLoad('light')">LED Lighting (45W)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setLoad('pc')">Workstation PC (280W)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setLoad('heater')">Electric Heater (1500W)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setLoad('standby')">Standby Idle (8W)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Safety Warning, Tariff Calculator & Hardware Link -->
+    <div class="right-panel">
+      <!-- High Voltage Danger Card -->
+      <div class="card" style="border-left:4px solid #ef4444;background:#fff1f2;">
+        <span class="card-title" style="color:#b91c1c;font-size:0.85rem;">Mains Voltage High Hazard Notice</span>
+        <p style="font-size:0.8rem;color:#991b1b;margin-top:4px;line-height:1.5;">
+          The PZEM-004T measures lethal 110V/230V AC mains electricity. Installation must be conducted with main circuit breaker de-energized. Current transformer must clamp around Live phase wire only.
+        </p>
+      </div>
+
+      <!-- Configurable Tariff Calculator -->
+      <div class="card">
+        <span class="card-title">Utility Tariff &amp; Billing Model</span>
+        <div style="margin-top:12px;">
+          <label class="form-label" for="tariff-input">Rate per kWh ($/USD)</label>
+          <input type="number" id="tariff-input" class="text-input" value="0.18" step="0.01" min="0.01" oninput="updateTariff(this.value)">
+          <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:0.82rem;">
+            <span style="color:var(--text-secondary);">Projected Monthly:</span>
+            <strong id="monthly-bill-est">$27.72</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Link -->
+      <div class="card">
+        <span class="card-title">ESP8266 Meter Interface</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 32: Smart Energy Meter</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, PZEM-004T v3.0 AC Power Transducer with 100A CT Split-Core Clamp.</p>
+        <p><strong>Optoisolated TTL Connections:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>PZEM 5V &rarr; 5V External Supply</li>
+          <li>PZEM GND &rarr; Common GND</li>
+          <li>PZEM TX &rarr; NodeMCU D5 (GPIO 14 / Software RX)</li>
+          <li>PZEM RX &rarr; NodeMCU D6 (GPIO 12 / Software TX via 1k/2k divider)</li>
+        </ul>
+        <p><strong>Safety Precaution:</strong> Galvanic isolation separates high-voltage AC from low-voltage microcontrollers. Never bypass optocouplers.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

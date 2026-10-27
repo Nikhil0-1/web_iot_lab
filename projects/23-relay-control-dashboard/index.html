@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relay Control Dashboard — Tech IoT Warriors</title>
+  <meta name="description" content="Multi-channel relay module switching, pulse timers, and load bank monitoring with ESP8266.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-relay-dashboard">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 23 &middot; Relay Control Dashboard</div>
+          <div class="brand-subtitle">Industrial Relay Bank &middot; Pulse Timing &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+
+    <!-- LEFT PANEL: 4-Channel Relay Bank -->
+    <div class="left-panel">
+      <!-- Master Control Bar -->
+      <div class="card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">4-Channel Industrial Relay Module</span>
+            <div class="meta-text" id="active-summary">0 of 4 coils energized</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" onclick="toggleAllRelays(true)">All ON</button>
+            <button class="btn btn-sm btn-subtle" onclick="toggleAllRelays(false)">All OFF</button>
+          </div>
+        </div>
+
+        <!-- 4 Channel Cards -->
+        <div class="relay-card-grid">
+          <!-- Channel 1 -->
+          <div class="relay-card" id="relay-card-0">
+            <div class="relay-card-top">
+              <span class="relay-ch-badge">CH 1</span>
+              <span class="relay-led" id="led-relay-0"></span>
+            </div>
+            <div class="relay-name" id="name-relay-0">Submersible Pump</div>
+            <div class="relay-sub">GPIO 5 (D1) &middot; Active LOW</div>
+            <div class="relay-toggle-row">
+              <label class="relay-sw">
+                <input type="checkbox" id="sw-relay-0" onchange="toggleRelay(0, this.checked)">
+                <span class="relay-sw-track"></span>
+              </label>
+              <button class="btn btn-sm btn-subtle" onclick="pulseRelay(0)">Pulse 5s</button>
+            </div>
+          </div>
+
+          <!-- Channel 2 -->
+          <div class="relay-card" id="relay-card-1">
+            <div class="relay-card-top">
+              <span class="relay-ch-badge">CH 2</span>
+              <span class="relay-led" id="led-relay-1"></span>
+            </div>
+            <div class="relay-name" id="name-relay-1">Solenoid Valve</div>
+            <div class="relay-sub">GPIO 4 (D2) &middot; Active LOW</div>
+            <div class="relay-toggle-row">
+              <label class="relay-sw">
+                <input type="checkbox" id="sw-relay-1" onchange="toggleRelay(1, this.checked)">
+                <span class="relay-sw-track"></span>
+              </label>
+              <button class="btn btn-sm btn-subtle" onclick="pulseRelay(1)">Pulse 5s</button>
+            </div>
+          </div>
+
+          <!-- Channel 3 -->
+          <div class="relay-card" id="relay-card-2">
+            <div class="relay-card-top">
+              <span class="relay-ch-badge">CH 3</span>
+              <span class="relay-led" id="led-relay-2"></span>
+            </div>
+            <div class="relay-name" id="name-relay-2">High-Bay Floodlight</div>
+            <div class="relay-sub">GPIO 14 (D5) &middot; Active LOW</div>
+            <div class="relay-toggle-row">
+              <label class="relay-sw">
+                <input type="checkbox" id="sw-relay-2" onchange="toggleRelay(2, this.checked)">
+                <span class="relay-sw-track"></span>
+              </label>
+              <button class="btn btn-sm btn-subtle" onclick="pulseRelay(2)">Pulse 5s</button>
+            </div>
+          </div>
+
+          <!-- Channel 4 -->
+          <div class="relay-card" id="relay-card-3">
+            <div class="relay-card-top">
+              <span class="relay-ch-badge">CH 4</span>
+              <span class="relay-led" id="led-relay-3"></span>
+            </div>
+            <div class="relay-name" id="name-relay-3">Acoustic Siren</div>
+            <div class="relay-sub">GPIO 12 (D6) &middot; Active LOW</div>
+            <div class="relay-toggle-row">
+              <label class="relay-sw">
+                <input type="checkbox" id="sw-relay-3" onchange="toggleRelay(3, this.checked)">
+                <span class="relay-sw-track"></span>
+              </label>
+              <button class="btn btn-sm btn-subtle" onclick="pulseRelay(3)">Pulse 5s</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Electrical Telemetry -->
+      <div class="card">
+        <span class="card-title">Relay Board Telemetry</span>
+        <div class="metrics-grid" style="margin-top:14px;">
+          <div class="metric-card">
+            <div class="metric-label">Active Coils</div>
+            <div class="metric-val" id="m-active-coils">0 / 4</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Coil Current (5V)</div>
+            <div class="metric-val" id="m-coil-current">0 mA</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Optocoupler Isolation</div>
+            <div class="metric-val" id="m-iso">2500 V RMS</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Board Health</div>
+            <div class="metric-val" id="m-board-health">NOMINAL</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Channel Customization & Log -->
+    <div class="right-panel">
+
+      <!-- Workbench Controls -->
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Channel Renaming</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label" for="select-ch">Select Channel to Rename</label>
+          <div style="display:flex;gap:8px;">
+            <select id="select-ch" class="text-input" style="flex:1;">
+              <option value="0">Channel 1 (D1)</option>
+              <option value="1">Channel 2 (D2)</option>
+              <option value="2">Channel 3 (D5)</option>
+              <option value="3">Channel 4 (D6)</option>
+            </select>
+            <input type="text" id="input-ch-name" class="text-input" placeholder="New label" style="flex:1.5;">
+            <button class="btn btn-primary" onclick="renameChannel()">Save</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="ctrl-label">Simulation Fault Injection</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" onclick="simulateConnLoss()">Simulate Relay Bus Drop</button>
+            <button class="btn btn-sm btn-subtle" onclick="restoreConn()">Restore Bus</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Link -->
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">ESP8266 Hardware Link</span>
+          <span class="status-pill status-idle" id="hw-conn-status">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label" for="hw-ip">NodeMCU IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Event History -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Relay Switching Log</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list">
+          <div class="event-empty">No switching commands recorded.</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup — Project 23: Relay Control Dashboard</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, 4-Channel 5V Optocoupled Relay Board, External 5V Power Supply.</p>
+        <p><strong>Relay Pin Connections:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>Relay 1 IN &rarr; D1 (GPIO 5)</li>
+          <li>Relay 2 IN &rarr; D2 (GPIO 4)</li>
+          <li>Relay 3 IN &rarr; D5 (GPIO 14)</li>
+          <li>Relay 4 IN &rarr; D6 (GPIO 12)</li>
+          <li>Relay JD-VCC / VCC &rarr; External 5V Power Supply</li>
+          <li>Relay GND &rarr; Common System GND</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/relay_dashboard.ino</code> via Arduino IDE.</p>
+        <p><strong>High-Voltage Safety:</strong> For any AC mains wiring (110V/230V), always use an insulated terminal enclosure, install a physical fuse, and maintain optocoupled isolation between the ESP8266 logic and mains lines.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

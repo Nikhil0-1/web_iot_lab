@@ -1,0 +1,89 @@
+/* ======================================================
+   Project 14: Smart Water Tank Controller — CSS
+   ====================================================== */
+
+.main-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; padding-top: 24px; padding-bottom: 48px; align-items: start; }
+@media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+.left-panel, .right-panel { display: flex; flex-direction: column; gap: 20px; }
+
+.tank-stage-card { padding: 0; overflow: hidden; border-top: 4px solid var(--theme-accent); }
+
+.tank-visual-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  flex-wrap: wrap;
+}
+
+#tank-svg { width: 160px; min-width: 120px; flex-shrink: 0; }
+
+.tank-info-column { display: flex; flex-direction: column; gap: 10px; }
+
+.tank-metric-chip {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.85);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-card);
+  backdrop-filter: blur(8px);
+  min-width: 100px;
+}
+
+.tmc-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.tmc-val { font-size: 1.6rem; font-weight: 800; color: var(--theme-accent); font-family: var(--font-mono); line-height: 1; }
+.tmc-unit { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+.pump-mode-row { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-top: 1px solid var(--border-subtle); flex-wrap: wrap; }
+.pump-status-chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-full); background: var(--bg-card-subtle); border: 1px solid var(--border-card); font-size: 0.83rem; font-weight: 700; }
+.pump-dot { width: 9px; height: 9px; border-radius: 50%; background: #94a3b8; transition: background 0.3s; }
+.pump-dot.active { background: var(--theme-accent); box-shadow: 0 0 6px rgba(3,105,161,0.5); }
+.mode-chip-row { display: flex; gap: 6px; margin-left: auto; }
+.mode-chip { padding: 6px 14px; border-radius: var(--radius-full); border: 1px solid var(--border-card); background: var(--bg-card); font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast); }
+.mode-chip.active { background: var(--theme-accent); color: #fff; border-color: var(--theme-accent); }
+
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.card-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+.ctrl-label { display: block; font-size: 0.83rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.control-group { margin-bottom: 16px; }
+.control-group:last-child { margin-bottom: 0; }
+.slider { width: 100%; accent-color: var(--theme-accent); height: 5px; cursor: pointer; }
+.btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.cap-btn.active, .speed-btn.active { background: var(--theme-accent); color: #fff; border-color: var(--theme-accent); }
+
+.text-input { flex: 1; padding: 8px 12px; border: 1px solid var(--border-card); border-radius: var(--radius-sm); font-size: 0.87rem; outline: none; }
+.text-input:focus { border-color: var(--theme-accent); box-shadow: 0 0 0 3px var(--theme-accent-light); }
+.error-msg { padding: 8px 12px; background: var(--status-danger-bg); color: var(--status-danger-text); border: 1px solid var(--status-danger-border); border-radius: var(--radius-sm); font-size: 0.83rem; }
+.meta-text { font-size: 0.78rem; color: var(--text-muted); }
+
+.event-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+.event-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg-card-subtle); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.83rem; }
+.event-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--theme-accent); flex-shrink: 0; }
+.event-time { color: var(--text-muted); font-size: 0.78rem; margin-left: auto; }
+.event-empty { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 16px; }
+
+.modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(15,23,42,0.45); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal-container { background: var(--bg-card); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); padding: 28px; max-width: 540px; width: 90%; max-height: 85vh; overflow-y: auto; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+
+.mode-toggle { display: flex; border: 1px solid var(--border-card); border-radius: var(--radius-full); overflow: hidden; background: var(--bg-card); }
+.mode-toggle-btn { padding: 6px 14px; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); background: transparent; border: none; cursor: pointer; transition: all var(--transition-fast); }
+.mode-toggle-btn.active { background: var(--theme-accent); color: #fff; }
+
+.status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 700; }
+.status-ok { background: var(--status-ok-bg); color: var(--status-ok-text); border: 1px solid var(--status-ok-border); }
+.status-warn { background: var(--status-warn-bg); color: var(--status-warn-text); border: 1px solid var(--status-warn-border); }
+.status-danger { background: var(--status-danger-bg); color: var(--status-danger-text); border: 1px solid var(--status-danger-border); }
+.status-idle { background: var(--bg-card-subtle); color: var(--text-muted); border: 1px solid var(--border-card); }
+
+.pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.8); } }
+
+@media (max-width: 480px) { .tank-visual-wrapper { flex-direction: column; } .metrics-grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .pulse-dot { animation: none; } }

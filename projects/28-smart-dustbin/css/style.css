@@ -1,0 +1,141 @@
+/* Smart Dustbin Styles */
+.dustbin-arena {
+  width: 100%;
+  height: 260px;
+  background: radial-gradient(circle at 50% 50%, #134e4a 0%, #042f2e 100%);
+  border-radius: var(--radius-md);
+  margin: 16px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.bin-assembly {
+  position: relative;
+  width: 130px;
+  height: 190px;
+}
+
+/* Bin Lid */
+.bin-lid {
+  position: absolute;
+  top: 0;
+  left: -8px;
+  width: 146px;
+  height: 22px;
+  background: #0d9488;
+  border-radius: 8px 8px 2px 2px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  transform-origin: 10px center;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 5;
+}
+
+.bin-lid.opened {
+  transform: rotate(-80deg);
+}
+
+.bin-handle {
+  width: 32px;
+  height: 6px;
+  background: #14b8a6;
+  border-radius: 3px;
+  margin: -6px auto 0 auto;
+}
+
+.bin-sonar-sensor {
+  position: absolute;
+  bottom: -4px;
+  left: 60px;
+  width: 16px;
+  height: 6px;
+  background: #f59e0b;
+  border-radius: 2px;
+}
+
+/* Bin Body */
+.bin-canister {
+  position: absolute;
+  bottom: 0;
+  width: 130px;
+  height: 170px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 3px solid #14b8a6;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.waste-fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-top: 3px solid #34d399;
+  transition: height 0.6s ease, background 0.4s ease;
+}
+
+.waste-fill.high {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  border-top-color: #fbbf24;
+}
+
+.waste-fill.overflow {
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+  border-top-color: #f87171;
+}
+
+.fill-grid-lines {
+  position: absolute;
+  top: 0;
+  right: 6px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.4);
+  font-family: monospace;
+}
+
+/* Front IR Sensor */
+.ir-proximity-eye {
+  position: absolute;
+  top: 35px;
+  left: -14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+  transition: all 0.3s ease;
+}
+
+.ir-proximity-eye.active {
+  background: #38bdf8;
+  box-shadow: 0 0 14px #38bdf8;
+}
+
+.hand-wave-graphic {
+  position: absolute;
+  top: 25px;
+  left: -120px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.4s ease;
+}
+
+.hand-wave-graphic.waving {
+  opacity: 1;
+  transform: translateX(35px);
+}

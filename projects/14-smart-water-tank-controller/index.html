@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Water Tank Controller â€” Tech IoT Warriors</title>
+  <meta name="description" content="Automatic water tank level monitoring and pump control with HC-SR04 ultrasonic sensor and ESP8266.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-water-tank">
+
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 14 &middot; Smart Water Tank Controller</div>
+          <div class="brand-subtitle">HC-SR04 Ultrasonic &middot; Relay Pump &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+
+    <!-- LEFT: Tank Visualization -->
+    <div class="left-panel">
+      <div class="card tank-stage-card">
+        <!-- Tank SVG -->
+        <div class="tank-visual-wrapper">
+          <svg id="tank-svg" viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg">
+            <!-- Ultrasonic sensor on top -->
+            <rect x="82" y="10" width="36" height="14" rx="4" fill="#64748b"/>
+            <rect x="88" y="24" width="10" height="8" rx="2" fill="#475569"/>
+            <rect x="102" y="24" width="10" height="8" rx="2" fill="#475569"/>
+            <!-- Dashed line: distance measurement -->
+            <line id="dist-line" x1="100" y1="32" x2="100" y2="200" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+
+            <!-- Tank walls -->
+            <rect x="30" y="40" width="140" height="220" rx="8" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+
+            <!-- Water fill (animated) -->
+            <clipPath id="tankClip">
+              <rect x="31" y="41" width="138" height="218" rx="6"/>
+            </clipPath>
+            <rect id="water-fill" x="31" y="220" width="138" height="0" rx="0" fill="url(#waterGrad)" clip-path="url(#tankClip)" style="transition:all 1.2s ease;"/>
+
+            <!-- Wave overlay -->
+            <g clip-path="url(#tankClip)">
+              <path id="wave-path" d="M31,220 Q65,215 100,220 Q135,225 169,220 L169,260 L31,260 Z" fill="rgba(14,116,144,0.25)" style="transition:d 1.2s ease;"/>
+            </g>
+
+            <!-- Threshold markers -->
+            <line id="high-line" x1="28" y1="80" x2="172" y2="80" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.7"/>
+            <text id="high-lbl" x="25" y="78" font-size="9" fill="#16a34a" text-anchor="end">HI</text>
+            <line id="low-line" x1="28" y1="210" x2="172" y2="210" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.7"/>
+            <text id="low-lbl" x="25" y="213" font-size="9" fill="#ef4444" text-anchor="end">LO</text>
+
+            <!-- % label inside tank -->
+            <text id="tank-pct-text" x="100" y="155" font-size="28" font-weight="800" fill="#0369a1" text-anchor="middle" dominant-baseline="middle">--</text>
+            <text x="100" y="178" font-size="11" fill="#64748b" text-anchor="middle">%</text>
+
+            <!-- Pipe + Pump at bottom -->
+            <rect x="90" y="260" width="20" height="12" fill="#94a3b8"/>
+            <rect x="78" y="268" width="44" height="8" rx="3" fill="#64748b" id="pump-body"/>
+
+            <defs>
+              <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- Side info -->
+          <div class="tank-info-column">
+            <div class="tank-metric-chip">
+              <span class="tmc-label">Fill Level</span>
+              <span class="tmc-val" id="i-fill">--</span>
+              <span class="tmc-unit">%</span>
+            </div>
+            <div class="tank-metric-chip">
+              <span class="tmc-label">Distance</span>
+              <span class="tmc-val" id="i-dist">--</span>
+              <span class="tmc-unit">cm</span>
+            </div>
+            <div class="tank-metric-chip">
+              <span class="tmc-label">Volume Est.</span>
+              <span class="tmc-val" id="i-vol">--</span>
+              <span class="tmc-unit">L</span>
+            </div>
+            <div class="tank-metric-chip" id="pump-chip">
+              <span class="tmc-label">Pump</span>
+              <span class="tmc-val" id="i-pump" style="color:var(--text-muted)">OFF</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pump + Mode row -->
+        <div class="pump-mode-row">
+          <div class="pump-status-chip" id="pump-status-chip">
+            <span class="pump-dot" id="pump-dot"></span>
+            <span id="pump-label">Pump OFF</span>
+          </div>
+          <div class="mode-chip-row">
+            <button id="btn-auto" class="mode-chip active" onclick="setAutoMode(true)">Auto</button>
+            <button id="btn-manual" class="mode-chip" onclick="setAutoMode(false)">Manual</button>
+          </div>
+          <button id="btn-pump-manual" class="btn btn-sm" onclick="manualPumpToggle()" style="display:none;">Toggle Pump</button>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-box"><span class="metric-label">Fill</span><div class="metric-value-row"><span class="metric-value" id="m-fill">--</span><span class="metric-unit">%</span></div><span class="metric-sub" id="m-fill-status">--</span></div>
+        <div class="metric-box"><span class="metric-label">Pump</span><div class="metric-value-row"><span class="metric-value" id="m-pump">OFF</span></div><span class="metric-sub" id="m-pump-sub">Idle</span></div>
+        <div class="metric-box"><span class="metric-label">Low Threshold</span><div class="metric-value-row"><span class="metric-value" id="m-low-thresh">20</span><span class="metric-unit">%</span></div><span class="metric-sub">Start fill</span></div>
+        <div class="metric-box"><span class="metric-label">High Threshold</span><div class="metric-value-row"><span class="metric-value" id="m-high-thresh">85</span><span class="metric-unit">%</span></div><span class="metric-sub">Stop fill</span></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Controls + Chart + History -->
+    <div class="right-panel">
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Simulation Controls</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" id="btn-pause" onclick="togglePause()">Pause</button>
+            <button class="btn btn-sm btn-subtle" onclick="resetSim()">Reset</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Tank Fill Level <span id="lbl-fill">50</span>%</label>
+          <input type="range" id="sl-fill" min="0" max="100" value="50" class="slider"
+            oninput="tankState.targetFill=+this.value; document.getElementById('lbl-fill').textContent=this.value">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Low Threshold (Start pump) <span id="lbl-low">20</span>%</label>
+          <input type="range" id="sl-low" min="5" max="60" value="20" class="slider"
+            oninput="setLowThresh(+this.value)">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">High Threshold (Stop pump) <span id="lbl-high">85</span>%</label>
+          <input type="range" id="sl-high" min="40" max="100" value="85" class="slider"
+            oninput="setHighThresh(+this.value)">
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Tank Capacity</label>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle cap-btn active" data-cap="500" onclick="setCap(500,this)">500L</button>
+            <button class="btn btn-sm btn-subtle cap-btn" data-cap="1000" onclick="setCap(1000,this)">1000L</button>
+            <button class="btn btn-sm btn-subtle cap-btn" data-cap="2000" onclick="setCap(2000,this)">2000L</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">Simulation Speed</label>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle speed-btn active" data-speed="1" onclick="setSpeed(1,this)">1Ã—</button>
+            <button class="btn btn-sm btn-subtle speed-btn" data-speed="3" onclick="setSpeed(3,this)">3Ã—</button>
+            <button class="btn btn-sm btn-subtle speed-btn" data-speed="10" onclick="setSpeed(10,this)">10Ã—</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">Hardware Connection</span>
+          <span id="hw-conn-status" class="status-pill status-idle">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label">ESP8266 IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100">
+            <button class="btn btn-sm" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div id="hw-error-msg" class="error-msg" style="display:none;"></div>
+        <div id="hw-last-seen" class="meta-text" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Fill Level History</span>
+          <span class="meta-text" id="chart-pts">0 pts</span>
+        </div>
+        <canvas id="fill-chart" height="110" style="width:100%;display:block;"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Pump Events</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEvents()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list">
+          <div class="event-empty">No pump events yet.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup â€” Project 14: Smart Water Tank Controller</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Hardware:</strong> NodeMCU ESP8266, HC-SR04 Ultrasonic Sensor, 5V Relay Module, Water pump, External supply.</p>
+        <p><strong>GPIO Map:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>HC-SR04 Trig â†’ D1 (GPIO5)</li>
+          <li>HC-SR04 Echo â†’ D2 (GPIO4) via 1kÎ©/2kÎ© voltage divider to 3.3V</li>
+          <li>Relay IN â†’ D5 (GPIO14) â€” Active LOW</li>
+          <li>HC-SR04 VCC â†’ VIN (5V); Relay VCC â†’ VIN</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/water_tank.ino</code>. Set SSID and password. Tank height must be measured and set in firmware.</p>
+        <p><strong>Note:</strong> Mount the ultrasonic sensor at the top of the tank pointing downward. Configure TANK_HEIGHT_CM to the empty tank distance.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/simulation-utils.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,9 +1,12 @@
 {
-  "redirects": [
+  "rewrites": [
     {
-      "source": "/",
-      "destination": "/IoT-Projects-Lab/",
-      "permanent": true
+      "source": "/IoT-Projects-Lab/(.*)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/IoT-Projects-Lab",
+      "destination": "/index.html"
     }
   ],
   "headers": [

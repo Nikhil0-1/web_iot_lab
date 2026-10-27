@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visitor Counter — Tech IoT Warriors</title>
+  <meta name="description" content="Bi-directional optical break-beam doorway visitor tracking and facility occupancy estimator.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-visitor-counter">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 31 &middot; Visitor Counter</div>
+          <div class="brand-subtitle">Dual IR Optical Break-Beams &middot; Bi-Directional Logic &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Doorway Break-Beam Portal Stage -->
+    <div class="left-panel">
+      <div class="card doorway-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Optical Portal &amp; Transition Trajectory</span>
+            <div class="meta-text" id="beam-sub">Sequential Timing: Sensor A &rarr; Sensor B (Entry) | B &rarr; A (Exit)</div>
+          </div>
+          <span class="badge" id="occupancy-badge" style="background:#ede9fe;color:#7c3aed;font-weight:700;">14 Present</span>
+        </div>
+
+        <!-- Doorway Canvas Area -->
+        <div class="doorway-canvas-wrap">
+          <canvas id="doorway-canvas" width="680" height="260"></canvas>
+          <div class="beam-legend">
+            <span class="beam-tag" id="tag-beam-a">Beam A: Clear</span>
+            <span class="beam-tag" id="tag-beam-b">Beam B: Clear</span>
+          </div>
+        </div>
+
+        <!-- Traffic Simulation Controls -->
+        <div class="scenario-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Simulate Visitor Movement:</span>
+          <button class="btn btn-sm btn-subtle" onclick="simulateEntry()">Simulate Entry (A &rarr; B)</button>
+          <button class="btn btn-sm btn-subtle" onclick="simulateExit()">Simulate Exit (B &rarr; A)</button>
+          <button class="btn btn-sm btn-subtle" onclick="resetCounters()">Reset Counters</button>
+        </div>
+      </div>
+
+      <!-- Counter Metrics Row -->
+      <div class="metric-row">
+        <div class="metric-box">
+          <span class="metric-label">Estimated Occupancy</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-occupancy" style="color:#7c3aed;">14</span>
+            <span class="metric-unit">People</span>
+          </div>
+          <div class="meta-text">Inside Facility</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Cumulative In</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-entered" style="color:#059669;">142</span>
+            <span class="metric-unit">Total</span>
+          </div>
+          <div class="meta-text">Entries Logged</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Cumulative Out</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-exited" style="color:#e11d48;">128</span>
+            <span class="metric-unit">Total</span>
+          </div>
+          <div class="meta-text">Exits Logged</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Debounce Info, Event History & Hardware -->
+    <div class="right-panel">
+      <!-- Accuracy & Debounce Caveat Note -->
+      <div class="card" style="border-left:4px solid #7c3aed;background:#f5f3ff;">
+        <span class="card-title" style="color:#5b21b6;font-size:0.85rem;">Directional Logic &amp; Accuracy Constraints</span>
+        <p style="font-size:0.8rem;color:#4c1d95;margin-top:4px;line-height:1.5;">
+          Occupancy estimate is derived from the chronological sequence of Beam A and Beam B triggers with a 150ms debounce window. Accuracy may drift if two individuals cross side-by-side simultaneously.
+        </p>
+      </div>
+
+      <!-- Hardware Connection Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 Visitor Node</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Event Log -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Crossing Event Log</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list" style="max-height:220px;overflow-y:auto;margin-top:10px;">
+          <div class="event-empty">No visitor transitions logged yet.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 31: Visitor Counter</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, Dual IR Break-Beam Transmitters &amp; Receivers (Sensors A &amp; B), 10kΩ Pull-ups.</p>
+        <p><strong>Wiring:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>Sensor A Receiver Out &rarr; NodeMCU D1 (GPIO 5)</li>
+          <li>Sensor B Receiver Out &rarr; NodeMCU D2 (GPIO 4)</li>
+          <li>Transmitters &rarr; 5V External &amp; GND</li>
+          <li>Indicator LED &rarr; NodeMCU D6 (GPIO 12) via 220Ω resistor</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/visitor_counter.ino</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Project 02 — Gas Leakage Detector: Safety Station Styles
+   ========================================================================== */
+
+/* Main Showcase Stage */
+.gas-stage-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 48px;
+  position: relative;
+  overflow: hidden;
+  background-image: radial-gradient(circle at 12% 20%, rgba(254, 205, 211, 0.45) 0%, transparent 55%);
+}
+
+@media (max-width: 860px) {
+  .gas-stage-card {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 24px;
+    justify-items: center;
+  }
+}
+
+/* Gas Dispersion & Radar Assembly */
+.gas-chamber-assembly {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle at center, #fff1f2 0%, #fef3c7 100%);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: var(--radius-xl);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.95), 0 8px 24px -4px rgba(15, 23, 42, 0.08);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+#gas-cloud-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Concentric Radar Rings */
+.hazard-rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 220px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hazard-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px dashed rgba(15, 23, 42, 0.15);
+}
+
+.hazard-ring.inner { width: 70px; height: 70px; }
+.hazard-ring.mid { width: 140px; height: 140px; }
+.hazard-ring.outer { width: 210px; height: 210px; }
+
+/* Centered Alarm Overlay */
+.gas-alarm-overlay {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  padding: 16px 20px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  transition: all 0.3s ease;
+  min-width: 190px;
+}
+
+.gas-alarm-overlay.alarm-active {
+  border-color: #f43f5e;
+  box-shadow: 0 0 28px rgba(244, 63, 94, 0.45);
+  animation: alarmPulse 0.9s infinite alternate;
+}
+
+@keyframes alarmPulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.03); }
+}
+
+.alarm-strobe-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.alarm-strobe-icon.strobe-on {
+  background: #f43f5e;
+  color: #ffffff;
+  box-shadow: 0 0 20px #f43f5e;
+  animation: strobeFlash 0.35s infinite alternate;
+}
+
+@keyframes strobeFlash {
+  0% { transform: scale(0.95); opacity: 0.85; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Solenoid Valve Indicator */
+.valve-indicator-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.valve-indicator-dot.closed {
+  background: #e11d48;
+  box-shadow: 0 0 10px #e11d48;
+}
+
+/* Editorial Safety Metrics */
+.gas-editorial-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.gas-main-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gas-large-num {
+  font-size: 4.8rem;
+  font-weight: 800;
+  font-family: var(--font-family);
+  letter-spacing: -0.04em;
+  color: var(--text-main);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}

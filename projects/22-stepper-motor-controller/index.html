@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stepper Motor Controller — Tech IoT Warriors</title>
+  <meta name="description" content="Precision step-and-direction stepper motor positioning and homing control with ESP8266.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-stepper-control">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 22 &middot; Stepper Motor Controller</div>
+          <div class="brand-subtitle">Step & Direction Driver &middot; Coordinate Indexing &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+
+    <!-- LEFT PANEL: Rotary Dial & Step Telemetry -->
+    <div class="left-panel">
+      <!-- Stepper Visual Stage Card -->
+      <div class="card stepper-stage-card">
+        <div class="card-header-row">
+          <span class="card-title">Shaft Coordinate Dial</span>
+          <span class="status-pill status-idle" id="stepper-status-badge">HOLDING</span>
+        </div>
+
+        <div class="stepper-vis-container">
+          <div class="stepper-dial-frame">
+            <svg id="stepper-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+              <!-- Compass ring -->
+              <circle cx="110" cy="110" r="95" fill="#f8fafc" stroke="#cbd5e1" stroke-width="4"/>
+              <circle cx="110" cy="110" r="85" fill="#0f172a"/>
+
+              <!-- Ticks around circumference (every 30 deg) -->
+              <g stroke="#64748b" stroke-width="2">
+                <line x1="110" y1="28" x2="110" y2="38"/>
+                <line x1="110" y1="182" x2="110" y2="192"/>
+                <line x1="28" y1="110" x2="38" y2="110"/>
+                <line x1="182" y1="110" x2="192" y2="110"/>
+                <line x1="52" y1="52" x2="60" y2="60"/>
+                <line x1="168" y1="52" x2="160" y2="60"/>
+                <line x1="52" y1="168" x2="60" y2="160"/>
+                <line x1="168" y1="168" x2="160" y2="160"/>
+              </g>
+
+              <text x="110" y="52" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="middle">0°</text>
+              <text x="170" y="114" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="middle">90°</text>
+              <text x="110" y="174" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="middle">180°</text>
+              <text x="50" y="114" fill="#94a3b8" font-size="10" font-weight="700" text-anchor="middle">270°</text>
+
+              <!-- Rotating Stepper Pointer -->
+              <g id="stepper-pointer" class="stepper-pointer">
+                <!-- Needle arrow -->
+                <polygon points="110,38 116,110 104,110" fill="#059669"/>
+                <polygon points="110,135 114,110 106,110" fill="#64748b"/>
+                <!-- Center Rotor Cap -->
+                <circle cx="110" cy="110" r="14" fill="#1e293b" stroke="#059669" stroke-width="2"/>
+                <circle cx="110" cy="110" r="4" fill="#ffffff"/>
+              </g>
+            </svg>
+          </div>
+
+          <div class="stepper-val-overlay">
+            <div class="big-steps" id="live-steps">0</div>
+            <div class="steps-sub" id="live-deg">0.0° · ABSOLUTE POSITION</div>
+          </div>
+        </div>
+
+        <div class="limit-switch-row">
+          <div class="limit-chip" id="chip-ccw-limit">
+            <span class="limit-led" id="led-ccw"></span> CCW LIMIT (REV)
+          </div>
+          <div class="limit-chip" id="chip-cw-limit">
+            <span class="limit-led" id="led-cw"></span> CW LIMIT (FWD)
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Grid -->
+      <div class="card">
+        <span class="card-title">Motion Telemetry</span>
+        <div class="metrics-grid" style="margin-top:14px;">
+          <div class="metric-card">
+            <div class="metric-label">Target Step</div>
+            <div class="metric-val" id="m-target-step">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Step Rate</div>
+            <div class="metric-val" id="m-pps">400 PPS</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Step Resolution</div>
+            <div class="metric-val" id="m-res">1.8° / Full</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Driver Status</div>
+            <div class="metric-val" id="m-driver">ENABLED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Coordinate Indexing & Jog Controls -->
+    <div class="right-panel">
+
+      <!-- Workbench Controls -->
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Positioning & Indexing</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" onclick="homeAxis()">Home (0)</button>
+            <button class="btn btn-sm btn-subtle" onclick="zeroCoordinates()">Zero Coords</button>
+          </div>
+        </div>
+
+        <!-- Absolute Position Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <label class="ctrl-label" for="pos-slider" style="margin-bottom:0;">Absolute Step Target (-400 to +400)</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="pos-disp">0 steps</span>
+          </div>
+          <input type="range" id="pos-slider" class="slider" min="-400" max="400" value="0" oninput="onPositionSlider(this.value)">
+        </div>
+
+        <!-- Incremental Jog Buttons -->
+        <div class="control-group">
+          <span class="ctrl-label">Relative Jog Controls</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle" onclick="jogSteps(-100)">-100</button>
+            <button class="btn btn-sm btn-subtle" onclick="jogSteps(-10)">-10</button>
+            <button class="btn btn-sm btn-subtle" onclick="jogSteps(-1)">-1</button>
+            <button class="btn btn-sm btn-primary" onclick="jogSteps(1)">+1</button>
+            <button class="btn btn-sm btn-primary" onclick="jogSteps(10)">+10</button>
+            <button class="btn btn-sm btn-primary" onclick="jogSteps(100)">+100</button>
+          </div>
+        </div>
+
+        <!-- Step Rate Frequency -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <label class="ctrl-label" for="speed-slider" style="margin-bottom:0;">Pulse Frequency (Speed)</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="speed-disp">400 PPS</span>
+          </div>
+          <input type="range" id="speed-slider" class="slider" min="100" max="1000" step="50" value="400" oninput="onSpeedInput(this.value)">
+        </div>
+
+        <!-- Stop -->
+        <div class="control-group">
+          <button class="btn btn-subtle" style="width:100%;" onclick="abortMotion()">Halt Motion</button>
+        </div>
+      </div>
+
+      <!-- Hardware Link -->
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">ESP8266 Hardware Link</span>
+          <span class="status-pill status-idle" id="hw-conn-status">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label" for="hw-ip">NodeMCU IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Motion Event Log -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Motion Indexing Log</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list">
+          <div class="event-empty">No motion commands logged.</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup — Project 22: Stepper Motor Controller</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, A4988 or DRV8825 Stepper Driver carrier, NEMA 17 Stepper Motor, 12V 2A External Power Supply, 100µF decoupling capacitor across VMOT/GND.</p>
+        <p><strong>Wiring:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>Driver STEP &rarr; D1 (GPIO 5)</li>
+          <li>Driver DIR &rarr; D2 (GPIO 4)</li>
+          <li>Driver ENABLE &rarr; D5 (GPIO 14) (Active LOW)</li>
+          <li>Driver VDD / GND &rarr; 3.3V and GND</li>
+          <li>Driver VMOT / GND &rarr; 12V Supply with 100µF capacitor</li>
+          <li>Driver 1A/1B/2A/2B &rarr; Stepper 4-wire phases</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/stepper_controller.ino</code>. Uses hardware timer for non-blocking step generation.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

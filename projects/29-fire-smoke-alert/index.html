@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fire & Smoke Alert — Tech IoT Warriors</title>
+  <meta name="description" content="Industrial environmental smoke density telemetry and optical flame hazard warning system.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-fire-smoke">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 29 &middot; Fire &amp; Smoke Alert</div>
+          <div class="brand-subtitle">MQ-2 Smoke Density &middot; Optical Flame Detection &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Smoke Canvas & Hazard Alert Banner -->
+    <div class="left-panel">
+      <!-- Emergency Status Banner -->
+      <div class="card emergency-banner" id="emergency-banner">
+        <div class="banner-icon-wrap" id="banner-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div class="banner-info">
+          <div class="banner-title" id="banner-title">STATUS: NORMAL CONDITIONS</div>
+          <div class="banner-sub" id="banner-sub">Smoke concentration well below safety threshold. Optical flame sensor clear.</div>
+        </div>
+        <div class="audio-toggle-wrap">
+          <button class="btn btn-sm btn-subtle" id="audio-toggle-btn" onclick="toggleAudioAlarm()">
+            🔊 Siren Enabled
+          </button>
+        </div>
+      </div>
+
+      <!-- Smoke & Flame Particle Canvas -->
+      <div class="card smoke-stage-card">
+        <div class="card-header-row">
+          <span class="card-title">Smoke Concentration &amp; Thermal Plume</span>
+          <span class="badge" id="warmup-badge" style="background:#e0f2fe;color:#0369a1;">Sensor Warmed Up</span>
+        </div>
+
+        <div class="smoke-canvas-wrap">
+          <canvas id="smoke-canvas" width="680" height="280"></canvas>
+          <div class="flame-sensor-indicator" id="flame-indicator">
+            <div class="flame-dot"></div>
+            <span>Optical Flame: Inactive</span>
+          </div>
+        </div>
+
+        <!-- Scenarios Bar -->
+        <div class="scenario-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Test Scenarios:</span>
+          <button class="btn btn-sm btn-subtle" onclick="setScenario('clean')">Clean Ambient (60 PPM)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setScenario('smolder')">Smoldering Smoke (220 PPM)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setScenario('fire')">Critical Flame Alert (550 PPM)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setScenario('warmup')">Simulate Warmup</button>
+        </div>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="metric-row">
+        <div class="metric-box">
+          <span class="metric-label">Smoke Density</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-smoke-ppm">65</span>
+            <span class="metric-unit">PPM</span>
+          </div>
+          <div class="meta-text" id="val-smoke-tier">Clean Atmosphere</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Alarm Threshold</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-threshold">300</span>
+            <span class="metric-unit">PPM</span>
+          </div>
+          <div class="meta-text">User Configurable</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Flame Transducer</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-flame-state" style="font-size:1.15rem;color:#059669;">Clear</span>
+          </div>
+          <div class="meta-text">Phototransistor DO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Config, Disclaimer, Event Log & Hardware -->
+    <div class="right-panel">
+      <!-- Life Safety Disclaimer -->
+      <div class="card" style="border-left:4px solid #f59e0b;background:#fffbeb;">
+        <span class="card-title" style="color:#b45309;font-size:0.85rem;">Educational Demonstration Disclaimer</span>
+        <p style="font-size:0.8rem;color:#78350f;margin-top:4px;line-height:1.5;">
+          This is an educational IoT laboratory module. MQ-2 and flame sensors are uncertified consumer transducers and <strong>MUST NOT</strong> be used as life-safety fire protection alarms.
+        </p>
+      </div>
+
+      <!-- Threshold Slider Card -->
+      <div class="card">
+        <span class="card-title">Smoke Alert Threshold</span>
+        <div style="margin-top:12px;">
+          <input type="range" id="threshold-slider" min="100" max="800" step="25" value="300" style="width:100%;" oninput="updateThreshold(this.value)">
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:0.75rem;color:var(--text-secondary);">
+            <span>100 PPM (Sensitive)</span>
+            <strong id="threshold-display">300 PPM</strong>
+            <span>800 PPM (High)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Link -->
+      <div class="card">
+        <span class="card-title">ESP8266 Sensor Node</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Event Log -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Incident Timeline</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list" style="max-height:200px;overflow-y:auto;margin-top:10px;">
+          <div class="event-empty">No hazardous events recorded.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 29: Fire &amp; Smoke Alert</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, MQ-2 Combustible Gas/Smoke Sensor, Optical Flame Sensor, Active Piezo Buzzer, Red Alert LED.</p>
+        <p><strong>Wiring Assignments:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>MQ-2 VCC &rarr; 5V External (Heater coil draws 150mA continuous!)</li>
+          <li>MQ-2 AO &rarr; NodeMCU A0 (via 10k/20k voltage divider)</li>
+          <li>Flame Sensor DO &rarr; D1 (GPIO 5)</li>
+          <li>Piezo Buzzer &rarr; D6 (GPIO 12) via 2N2222 transistor</li>
+          <li>Red Alert LED &rarr; D7 (GPIO 13) via 220Ω resistor</li>
+        </ul>
+        <p><strong>Heater Burn-in:</strong> New MQ-2 sensors require a 24-hour thermal preheat cycle before baseline resistance R0 stabilizes.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

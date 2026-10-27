@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DC Motor Control Panel — Tech IoT Warriors</title>
+  <meta name="description" content="Dual-direction H-bridge DC motor control with PWM speed regulation and simulated load dynamics.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-dc-motor">
+
+  <!-- Compact Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 21 &middot; DC Motor Control Panel</div>
+          <div class="brand-subtitle">H-Bridge Driver &middot; Bidirectional PWM &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+
+    <!-- LEFT PANEL: Motor Stage & Live Telemetry -->
+    <div class="left-panel">
+      <!-- Motor Visual Card -->
+      <div class="card motor-stage-card">
+        <div class="card-header-row">
+          <span class="card-title">Armature & Shaft Assembly</span>
+          <span class="status-pill status-idle" id="motor-status-badge">STOPPED</span>
+        </div>
+
+        <div class="motor-vis-container">
+          <!-- Industrial Motor Housing SVG -->
+          <div class="motor-housing">
+            <svg id="motor-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Metallic Stator Ring -->
+              <circle cx="100" cy="100" r="88" fill="#1e293b" stroke="#334155" stroke-width="8"/>
+              <circle cx="100" cy="100" r="76" fill="#0f172a"/>
+
+              <!-- Pole coils -->
+              <rect x="92" y="24" width="16" height="20" rx="3" fill="#b45309"/>
+              <rect x="92" y="156" width="16" height="20" rx="3" fill="#b45309"/>
+              <rect x="24" y="92" width="20" height="16" rx="3" fill="#b45309"/>
+              <rect x="156" y="92" width="20" height="16" rx="3" fill="#b45309"/>
+
+              <!-- Rotating Armature Rotor -->
+              <g id="motor-rotor" class="motor-rotor">
+                <!-- 4 rotor spokes with colored dots for visual rotation feedback -->
+                <circle cx="100" cy="100" r="54" fill="#334155"/>
+                <line x1="100" y1="46" x2="100" y2="154" stroke="#64748b" stroke-width="4"/>
+                <line x1="46" y1="100" x2="154" y2="100" stroke="#64748b" stroke-width="4"/>
+                <circle cx="100" cy="58" r="7" fill="#f59e0b"/>
+                <circle cx="100" cy="142" r="7" fill="#ef4444"/>
+                <circle cx="58" cy="100" r="7" fill="#3b82f6"/>
+                <circle cx="142" cy="100" r="7" fill="#10b981"/>
+                <!-- Center Shaft Hub -->
+                <circle cx="100" cy="100" r="20" fill="#0f172a"/>
+                <circle cx="100" cy="100" r="8" fill="#cbd5e1"/>
+              </g>
+            </svg>
+          </div>
+
+          <div class="motor-speed-overlay">
+            <div class="big-rpm" id="live-rpm">0 RPM</div>
+            <div class="motor-dir-text" id="live-dir">BRAKED / NEUTRAL</div>
+          </div>
+        </div>
+
+        <div class="stall-alert" id="stall-warning" style="display:none;">
+          WARNING: High mechanical load detected! Motor approaching stall condition.
+        </div>
+      </div>
+
+      <!-- Electrical Telemetry -->
+      <div class="card">
+        <span class="card-title">H-Bridge Telemetry</span>
+        <div class="metrics-grid" style="margin-top:14px;">
+          <div class="metric-card">
+            <div class="metric-label">PWM Output</div>
+            <div class="metric-val" id="m-pwm">0 %</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Supply Voltage</div>
+            <div class="metric-val" id="m-voltage">12.0 V</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Estimated Current</div>
+            <div class="metric-val" id="m-current">0 mA</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Shaft Power</div>
+            <div class="metric-val" id="m-power">0.0 W</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Speed Slider, Direction, Presets, Load Model -->
+    <div class="right-panel">
+
+      <!-- Workbench Controls -->
+      <div class="card" id="sim-controls-card">
+        <div class="card-header-row">
+          <span class="card-title">Motor Drive Controls</span>
+          <button class="btn btn-sm btn-subtle" onclick="stopMotor()">Emergency Stop</button>
+        </div>
+
+        <!-- Direction Controls -->
+        <div class="control-group">
+          <span class="ctrl-label">H-Bridge Polarity / Direction</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-primary dir-btn active" id="btn-dir-fwd" onclick="setDirection('FORWARD')">Forward (CW)</button>
+            <button class="btn btn-sm btn-subtle dir-btn" id="btn-dir-rev" onclick="setDirection('REVERSE')">Reverse (CCW)</button>
+            <button class="btn btn-sm btn-subtle dir-btn" id="btn-dir-brake" onclick="brakeMotor()">Active Brake</button>
+          </div>
+        </div>
+
+        <!-- Speed Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <label class="ctrl-label" for="speed-slider" style="margin-bottom:0;">PWM Speed Duty</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:var(--theme-accent);" id="speed-disp">0 %</span>
+          </div>
+          <input type="range" id="speed-slider" class="slider" min="0" max="100" value="0" oninput="onSpeedSlider(this.value)">
+        </div>
+
+        <!-- Speed Presets -->
+        <div class="control-group">
+          <span class="ctrl-label">Quick Speed Presets</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-subtle preset-btn active" id="btn-p-0" onclick="setSpeedPreset(0)">0% (Stop)</button>
+            <button class="btn btn-sm btn-subtle preset-btn" id="btn-p-25" onclick="setSpeedPreset(25)">25% (Crawl)</button>
+            <button class="btn btn-sm btn-subtle preset-btn" id="btn-p-50" onclick="setSpeedPreset(50)">50% (Cruise)</button>
+            <button class="btn btn-sm btn-subtle preset-btn" id="btn-p-75" onclick="setSpeedPreset(75)">75% (Fast)</button>
+            <button class="btn btn-sm btn-subtle preset-btn" id="btn-p-100" onclick="setSpeedPreset(100)">100% (Max)</button>
+          </div>
+        </div>
+
+        <!-- Simulated Mechanical Load Slider -->
+        <div class="control-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <label class="ctrl-label" for="load-slider" style="margin-bottom:0;">Shaft Mechanical Load</label>
+            <span style="font-weight:700;font-family:var(--font-mono);color:#f59e0b;" id="load-disp">0 %</span>
+          </div>
+          <input type="range" id="load-slider" class="slider" min="0" max="100" value="0" oninput="onLoadSlider(this.value)">
+        </div>
+      </div>
+
+      <!-- Hardware Link -->
+      <div class="card" id="hw-controls-card" style="display:none;">
+        <div class="card-header-row">
+          <span class="card-title">ESP8266 Hardware Link</span>
+          <span class="status-pill status-idle" id="hw-conn-status">Disconnected</span>
+        </div>
+        <div class="control-group">
+          <label class="ctrl-label" for="hw-ip">NodeMCU IP Address</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="hw-ip" class="text-input" placeholder="192.168.1.100" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Command History -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Command Activity Log</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list">
+          <div class="event-empty">No motor commands recorded.</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Setup — Project 21: DC Motor Control Panel</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, TB6612FNG or L298N H-Bridge Driver module, 12V DC Gearmotor, 12V External Motor Supply.</p>
+        <p><strong>Wiring:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>Driver IN1 &rarr; D1 (GPIO 5)</li>
+          <li>Driver IN2 &rarr; D2 (GPIO 4)</li>
+          <li>Driver PWM (ENA) &rarr; D5 (GPIO 14)</li>
+          <li>Driver VM &rarr; 12V Motor Supply (+)</li>
+          <li>Driver GND &rarr; Common System GND</li>
+          <li>Motor Outputs &rarr; DC Motor Terminals</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/dc_motor_control.ino</code>. Implements interlocked direction changes preventing shoot-through short circuits on the bridge.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

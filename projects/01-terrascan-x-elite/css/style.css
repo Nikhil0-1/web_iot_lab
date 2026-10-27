@@ -1,0 +1,335 @@
+/* ==========================================================================
+   TERRASCAN X ELITE — Radar Instrumentation Stylesheet
+   ========================================================================== */
+
+:root {
+  --radar-primary: #0284c7;
+  --radar-accent: #00f59b;
+  --radar-warn: #f59e0b;
+  --radar-danger: #ef4444;
+  --radar-bg: #090d16;
+  --radar-grid: rgba(0, 245, 155, 0.18);
+  --radar-beam: rgba(0, 245, 155, 0.6);
+  --radar-beam-trail: rgba(0, 245, 155, 0.08);
+}
+
+.theme-radar {
+  --primary-color: #0284c7;
+  --accent-color: #00f59b;
+}
+
+/* Two-column responsive layout */
+.radar-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+  margin-bottom: 48px;
+}
+
+@media (max-width: 992px) {
+  .radar-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Radar Scope Card */
+.scope-card {
+  background: var(--radar-bg);
+  color: #f8fafc;
+  border-radius: var(--radius-lg, 16px);
+  padding: 24px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(0, 245, 155, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.scope-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #0284c7, #00f59b, #0284c7);
+}
+
+.scope-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.scope-title {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scope-title .live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--radar-accent);
+  box-shadow: 0 0 10px var(--radar-accent);
+  animation: radarPulse 1.6s infinite ease-in-out;
+}
+
+@keyframes radarPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.scope-canvas-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.6 / 1;
+  max-height: 420px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#radarCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Radar HUD Metrics */
+.radar-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.radar-stat-box {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px;
+  text-align: center;
+}
+
+.radar-stat-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.radar-stat-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.radar-stat-unit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  margin-left: 2px;
+}
+
+/* Status Banner */
+.radar-alert-banner {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.radar-alert-banner.clear {
+  background: rgba(0, 245, 155, 0.12);
+  color: #00f59b;
+  border: 1px solid rgba(0, 245, 155, 0.3);
+}
+
+.radar-alert-banner.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.radar-alert-banner.danger {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Controls Column */
+.controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-card, #e2e8f0);
+  border-radius: var(--radius-lg, 16px);
+  padding: 20px;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+}
+
+.panel-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main, #0f172a);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Scenario Pills */
+.scenario-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.scenario-btn {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-card, #cbd5e1);
+  background: var(--bg-card, #f8fafc);
+  color: var(--text-secondary, #475569);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: center;
+}
+
+.scenario-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: var(--text-main, #0f172a);
+}
+
+.scenario-btn.active {
+  background: var(--radar-primary);
+  color: #ffffff;
+  border-color: var(--radar-primary);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+/* Sliders */
+.control-group {
+  margin-bottom: 14px;
+}
+
+.control-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+  margin-bottom: 6px;
+}
+
+.control-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.control-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--radar-primary);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease;
+}
+
+.control-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Action button group */
+.sim-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.sim-actions .btn {
+  flex: 1;
+}
+
+/* History Chart */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 160px;
+}
+
+#historyCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Detection event log */
+.event-log-list {
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.event-log-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border-left: 3px solid #94a3b8;
+}
+
+.event-log-item.alert {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.event-log-item.warn {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+}
+
+@media (max-width: 640px) {
+  .radar-metrics-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .scenario-grid {
+    grid-template-columns: 1fr;
+  }
+  .scope-canvas-container {
+    aspect-ratio: 1.2 / 1;
+  }
+}

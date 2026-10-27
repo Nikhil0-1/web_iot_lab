@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Test Suite — Tech IoT Warriors</title>
+  <link rel="stylesheet" href="../shared/css/design-system.css">
+  <style>
+    body { padding: 40px 20px; background: var(--bg-primary); }
+    .test-container { max-width: 900px; margin: 0 auto; }
+    .test-card { margin-bottom: 16px; padding: 18px 24px; }
+    .test-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .badge-pass { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.8rem; }
+    .badge-fail { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; padding: 4px 10px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.8rem; }
+    .test-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem; font-family: var(--font-mono); }
+    .test-row:last-child { border-bottom: none; }
+    .stat-pill-lg { font-size: 1.1rem; font-weight: 800; padding: 10px 18px; border-radius: var(--radius-md); }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;">
+      <div>
+        <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main);">Tech IoT Warriors — Master Test Suite</h1>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Automated unit and integration validation across all 36 modules (Categories A, B &amp; C) &amp; shared engines.</p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="../index.html" class="btn btn-sm">Return to Launcher</a>
+        <button id="btn-rerun" class="btn btn-sm btn-primary">Rerun Tests</button>
+      </div>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="card test-card" style="margin-bottom: 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-around; text-align: center;">
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Total Assertions</div>
+          <div id="stat-total" style="font-size: 2rem; font-weight: 800;">0</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Passed</div>
+          <div id="stat-passed" style="font-size: 2rem; font-weight: 800; color: #059669;">0</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Failed</div>
+          <div id="stat-failed" style="font-size: 2rem; font-weight: 800; color: #e11d48;">0</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Status</div>
+          <div id="stat-overall-badge" class="badge-pass" style="font-size: 1rem; margin-top: 6px;">RUNNING</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Sections -->
+    <div id="test-sections"></div>
+  </div>
+
+  <!-- Load Shared Engines -->
+  <script src="../shared/js/utilities.js"></script>
+  <script src="../shared/js/chart-utils.js"></script>
+  <script src="../shared/js/simulation-utils.js"></script>
+  <script src="../shared/js/networking.js"></script>
+
+  <!-- Load New Projects 01-04 Simulations -->
+  <script src="../projects/01-terrascan-x-elite/js/simulation.js"></script>
+  <script src="../projects/02-rainwatch-ai/js/simulation.js"></script>
+  <script src="../projects/03-terraiq/js/simulation.js"></script>
+  <script src="../projects/04-atmos-ai/js/simulation.js"></script>
+
+  <!-- Load Projects 05-12 Configs, Simulations & Adapters -->
+  <script src="../projects/05-smart-air-quality-monitor/config/config.js"></script>
+  <script src="../projects/05-smart-air-quality-monitor/js/simulation.js"></script>
+  <script src="../projects/05-smart-air-quality-monitor/js/hardware.js"></script>
+
+  <script src="../projects/06-gas-leakage-detector/config/config.js"></script>
+  <script src="../projects/06-gas-leakage-detector/js/simulation.js"></script>
+  <script src="../projects/06-gas-leakage-detector/js/hardware.js"></script>
+
+  <script src="../projects/07-ldr-light-intensity-monitor/config/config.js"></script>
+  <script src="../projects/07-ldr-light-intensity-monitor/js/simulation.js"></script>
+  <script src="../projects/07-ldr-light-intensity-monitor/js/hardware.js"></script>
+
+  <script src="../projects/08-digital-thermometer/config/config.js"></script>
+  <script src="../projects/08-digital-thermometer/js/simulation.js"></script>
+  <script src="../projects/08-digital-thermometer/js/hardware.js"></script>
+
+  <script src="../projects/09-water-level-monitor/config/config.js"></script>
+  <script src="../projects/09-water-level-monitor/js/simulation.js"></script>
+  <script src="../projects/09-water-level-monitor/js/hardware.js"></script>
+
+  <script src="../projects/10-water-flow-meter/config/config.js"></script>
+  <script src="../projects/10-water-flow-meter/js/simulation.js"></script>
+  <script src="../projects/10-water-flow-meter/js/hardware.js"></script>
+
+  <script src="../projects/11-tds-water-quality-monitor/config/config.js"></script>
+  <script src="../projects/11-tds-water-quality-monitor/js/simulation.js"></script>
+  <script src="../projects/11-tds-water-quality-monitor/js/hardware.js"></script>
+
+  <script src="../projects/12-vibration-tilt-monitor/config/config.js"></script>
+  <script src="../projects/12-vibration-tilt-monitor/js/simulation.js"></script>
+  <script src="../projects/12-vibration-tilt-monitor/js/hardware.js"></script>
+
+  <!-- Load Category B (13-24) Simulations -->
+  <script src="../projects/13-automatic-plant-watering/js/simulation.js"></script>
+  <script src="../projects/14-smart-water-tank-controller/js/simulation.js"></script>
+  <script src="../projects/15-smart-street-light/js/simulation.js"></script>
+  <script src="../projects/16-wifi-home-automation/js/simulation.js"></script>
+  <script src="../projects/17-fan-speed-controller/js/simulation.js"></script>
+  <script src="../projects/18-smart-exhaust-fan/js/simulation.js"></script>
+  <script src="../projects/19-automatic-door-controller/js/simulation.js"></script>
+  <script src="../projects/20-servo-motor-web-control/js/simulation.js"></script>
+  <script src="../projects/21-dc-motor-control-panel/js/simulation.js"></script>
+  <script src="../projects/22-stepper-motor-controller/js/simulation.js"></script>
+  <script src="../projects/23-relay-control-dashboard/js/simulation.js"></script>
+  <script src="../projects/24-smart-greenhouse-automation/js/simulation.js"></script>
+
+  <!-- Load Category C (25-36) Simulations -->
+  <script src="../projects/25-smart-parking-assistant/js/simulation.js"></script>
+  <script src="../projects/26-rfid-attendance-system/js/simulation.js"></script>
+  <script src="../projects/27-rfid-door-access/js/simulation.js"></script>
+  <script src="../projects/28-smart-dustbin/js/simulation.js"></script>
+  <script src="../projects/29-fire-smoke-alert/js/simulation.js"></script>
+  <script src="../projects/30-intrusion-detection-alarm/js/simulation.js"></script>
+  <script src="../projects/31-visitor-counter/js/simulation.js"></script>
+  <script src="../projects/32-smart-energy-meter/js/simulation.js"></script>
+  <script src="../projects/33-battery-voltage-monitor/js/simulation.js"></script>
+  <script src="../projects/34-solar-panel-monitor/js/simulation.js"></script>
+  <script src="../projects/35-digital-notice-board/js/simulation.js"></script>
+  <script src="../projects/36-smart-room-occupancy/js/simulation.js"></script>
+
+  <script>
+    let totalTests = 0;
+    let passedTests = 0;
+    let failedTests = 0;
+
+    const sectionsContainer = document.getElementById('test-sections');
+
+    function createSection(title) {
+      const card = document.createElement('div');
+      card.className = 'card test-card';
+      card.innerHTML = `
+        <div class="test-header">
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">${title}</h3>
+          <span class="badge-pass" id="badge-${title.replace(/[^a-zA-Z0-9]/g, '-')}">PASSED</span>
+        </div>
+        <div class="test-list"></div>
+      `;
+      sectionsContainer.appendChild(card);
+      return card.querySelector('.test-list');
+    }
+
+    function runAssertion(listEl, name, condition, details = '') {
+      totalTests++;
+      const row = document.createElement('div');
+      row.className = 'test-row';
+
+      if (condition) {
+        passedTests++;
+        row.innerHTML = `<span>✓ ${name}</span><span style="color: #059669; font-weight: 700;">PASS</span>`;
+      } else {
+        failedTests++;
+        row.innerHTML = `<span>✗ ${name} <small style="color: #e11d48;">(${details})</small></span><span style="color: #e11d48; font-weight: 700;">FAIL</span>`;
+      }
+      listEl.appendChild(row);
+      updateSummary();
+    }
+
+    function updateSummary() {
+      document.getElementById('stat-total').textContent = totalTests;
+      document.getElementById('stat-passed').textContent = passedTests;
+      document.getElementById('stat-failed').textContent = failedTests;
+
+      const badge = document.getElementById('stat-overall-badge');
+      if (failedTests === 0) {
+        badge.className = 'badge-pass';
+        badge.textContent = 'ALL TESTS PASSED';
+      } else {
+        badge.className = 'badge-fail';
+        badge.textContent = `${failedTests} FAILURES`;
+      }
+    }
+
+    function runAllTests() {
+      sectionsContainer.innerHTML = '';
+      totalTests = 0;
+      passedTests = 0;
+      failedTests = 0;
+
+      // ==========================================
+      // SECTION 1: Shared Core Utilities
+      // ==========================================
+      const s1 = createSection('1. Shared Math, Utilities & CSV');
+      runAssertion(s1, 'Utils.clamp bounds value correctly', Utils.clamp(120, 0, 100) === 100 && Utils.clamp(-5, 0, 100) === 0);
+      runAssertion(s1, 'Utils.mapRange linear interpolation', Math.abs(Utils.mapRange(5, 0, 10, 0, 100) - 50) < 0.001);
+      const stats = Utils.calcStats([10, 20, 30, 40, 50]);
+      runAssertion(s1, 'Utils.calcStats min, max, avg computation', stats.min === 10 && stats.max === 50 && stats.avg === 30);
+      runAssertion(s1, 'MiniTimeSeriesChart class is available', typeof MiniTimeSeriesChart === 'function');
+      runAssertion(s1, 'SimulationEngine class is available', typeof SimulationEngine === 'function');
+      runAssertion(s1, 'ESP8266Client class is available', typeof ESP8266Client === 'function');
+
+      // ==========================================
+      // SECTION 2: Project 04 Reference (Digital Thermometer)
+      // ==========================================
+      const s2 = createSection('2. Project 04: Digital Thermometer');
+      runAssertion(s2, 'Config projectId is digital-thermometer', window.ThermometerConfig.projectId === 'digital-thermometer');
+      const c = 25.0;
+      const f = (c * 9/5) + 32;
+      runAssertion(s2, 'Celsius to Fahrenheit accurate conversion', Math.abs(f - 77.0) < 0.01);
+      const sim04 = new ThermometerSimulation(window.ThermometerConfig);
+      sim04.setScenario('cold', true);
+      const step04Cold = sim04.generateStep('cold', 1);
+      runAssertion(s2, 'Cold scenario generates temperature in cold range', step04Cold.readings.temperatureC < 15.0);
+      sim04.setScenario('fault');
+      const step04Fault = sim04.generateStep('fault', 2);
+      runAssertion(s2, 'Fault scenario reports sensorStatus fault & null readings', step04Fault.sensorStatus === 'fault' && step04Fault.readings.temperatureC === null);
+
+      // ==========================================
+      // SECTION 3: Project 01 (Smart Air Quality Monitor)
+      // ==========================================
+      const s3 = createSection('3. Project 01: Smart Air Quality Monitor');
+      runAssertion(s3, 'Config baseline ADC is 120', window.AirQualityConfig.adc.cleanAirBaseline === 120);
+      const sim01 = new AirQualitySimulation(window.AirQualityConfig);
+      sim01.setScenario('clean');
+      const step01Clean = sim01.generateStep('clean', 1);
+      runAssertion(s3, 'Clean air scenario generates AQI <= 50 (Good)', step01Clean.readings.airQualityIndex <= 50 && step01Clean.readings.airTier === 'Good');
+      sim01.setScenario('hazardous');
+      sim01.setManualAqi(310);
+      const step01Haz = sim01.generateStep('hazardous', 2);
+      runAssertion(s3, 'Hazardous scenario sets airTier Hazardous', step01Haz.readings.airTier === 'Hazardous');
+
+      // ==========================================
+      // SECTION 4: Project 02 (Gas Leakage Detector)
+      // ==========================================
+      const s4 = createSection('4. Project 02: Gas Leakage Detector');
+      runAssertion(s4, 'Critical alarm threshold is 800 PPM', window.GasLeakageConfig.thresholds.critical === 800);
+      const sim02 = new GasLeakageSimulation(window.GasLeakageConfig);
+      sim02.setScenario('safe');
+      const step02Safe = sim02.generateStep('safe', 1);
+      runAssertion(s4, 'Safe scenario has alarmActive: false', step02Safe.readings.alarmActive === false);
+      sim02.setScenario('danger-leak');
+      sim02.setManualGas(950);
+      const step02Alarm = sim02.generateStep('danger-leak', 2);
+      runAssertion(s4, 'Dangerous gas level triggers alarmActive: true', step02Alarm.readings.alarmActive === true);
+
+      // ==========================================
+      // SECTION 5: Project 03 (LDR Light Intensity)
+      // ==========================================
+      const s5 = createSection('5. Project 03: LDR Light Intensity Monitor');
+      const sim03 = new LdrSimulation(window.LdrConfig);
+      sim03.setScenario('dark');
+      sim03.setManualPercent(5);
+      const step03Dark = sim03.generateStep('dark', 1);
+      runAssertion(s5, 'Dark scenario yields Pitch Dark tier', step03Dark.readings.ambientTier === 'Pitch Dark');
+      sim03.setScenario('sunlight');
+      sim03.setManualPercent(90);
+      const step03Sun = sim03.generateStep('sunlight', 2);
+      runAssertion(s5, 'Sunlight scenario yields Bright Sunlight tier', step03Sun.readings.ambientTier === 'Bright Sunlight');
+
+      // ==========================================
+      // SECTION 6: Project 05 (Water Level Monitor)
+      // ==========================================
+      const s6 = createSection('6. Project 05: Water Level Monitor');
+      runAssertion(s6, 'Tank capacity is 500 Liters', window.WaterLevelConfig.tank.capacityLiters === 500.0);
+      const sim05 = new WaterLevelSimulation(window.WaterLevelConfig);
+      sim05.setScenario('half');
+      sim05.setManualPercent(50);
+      const step05 = sim05.generateStep('half', 1);
+      runAssertion(s6, '50% fill calculates 250 Litres', Math.abs(step05.readings.liters - 250.0) < 5.0);
+
+      // ==========================================
+      // SECTION 7: Project 06 (Water Flow Meter)
+      // ==========================================
+      const s7 = createSection('7. Project 06: Water Flow Meter');
+      runAssertion(s7, 'YF-S201 calibration factor is 7.5', window.WaterFlowConfig.calibrationFactor === 7.5);
+      const sim06 = new WaterFlowSimulation(window.WaterFlowConfig);
+      sim06.setScenario('stagnant');
+      sim06.setManualFlow(0);
+      const step06Zero = sim06.generateStep('stagnant', 1);
+      runAssertion(s7, 'Zero flow indicates No Flow state', step06Zero.readings.flowRateLpm === 0);
+      sim06.setScenario('nominal');
+      sim06.setManualFlow(10);
+      const step06Nom = sim06.generateStep('nominal', 2);
+      runAssertion(s7, 'Flow rate converts to pulse counts and total volume', step06Nom.readings.pulseCount > 0 && step06Nom.readings.totalLiters > 0);
+
+      // ==========================================
+      // SECTION 8: Project 07 (TDS Water Quality Monitor)
+      // ==========================================
+      const s8 = createSection('8. Project 07: TDS Water Quality Monitor');
+      const sim07 = new TdsSimulation(window.TdsConfig);
+      sim07.setScenario('pure');
+      sim07.setManualTds(30);
+      const step07Pure = sim07.generateStep('pure', 1);
+      runAssertion(s8, '30 PPM classifies as Pure RO Water', step07Pure.readings.waterTier === 'Pure RO Water');
+      sim07.setScenario('contaminated');
+      sim07.setManualTds(800);
+      const step07Cont = sim07.generateStep('contaminated', 2);
+      runAssertion(s8, '800 PPM classifies as Non-potable', step07Cont.readings.waterTier.includes('Non-potable') || step07Cont.readings.waterTier.includes('Poor'));
+
+      // ==========================================
+      // SECTION 9: Project 08 (Vibration & Tilt Monitor)
+      // ==========================================
+      const s9 = createSection('9. Project 08: Vibration & Tilt Monitor');
+      const sim08 = new VibrationTiltSimulation(window.VibrationTiltConfig);
+      sim08.setScenario('flat');
+      sim08.setManualOrientation(0, 0);
+      const step08Flat = sim08.generateStep('flat', 1);
+      runAssertion(s9, 'Flat orientation records 0 pitch/roll and Stationary state', step08Flat.readings.motionState === 'Stationary' && Math.abs(step08Flat.readings.pitchDeg) < 2.0);
+      sim08.setScenario('shock');
+      const step08Shock = sim08.generateStep('shock', 2);
+      runAssertion(s9, 'Shock scenario records G-Force above shock threshold', step08Shock.readings.totalG >= window.VibrationTiltConfig.thresholds.shockThresholdG);
+
+      // ==========================================
+      // SECTION 10: Hardware API & Isolation Architecture
+      // ==========================================
+      const s10 = createSection('10. Hardware API Client & Isolation Validation');
+      const client = new ESP8266Client({
+        expectedProjectId: 'digital-thermometer',
+        baseUrl: 'http://192.168.4.1'
+      });
+      runAssertion(s10, 'ESP8266 client sets initial state to DISCONNECTED', client.state === 'DISCONNECTED');
+      client.setBaseUrl('192.168.1.100');
+      runAssertion(s10, 'setBaseUrl auto-prefixes http:// protocol', client.baseUrl === 'http://192.168.1.100');
+
+      // Hardware Adapter Validation
+      let hwResult = null;
+      const hwTest = new ThermometerHardware(window.ThermometerConfig, (data) => { hwResult = data; });
+      hwTest.handleData({
+        deviceId: 'esp8266-thermometer-01',
+        projectId: 'digital-thermometer',
+        mode: 'hardware',
+        timestamp: 12345,
+        sensorStatus: 'ok',
+        readings: { temperatureC: 28.5 }
+      });
+      runAssertion(s10, 'Hardware adapter marks mode as hardware', hwResult && hwResult.mode === 'hardware');
+      runAssertion(s10, 'Hardware adapter isolates from simulation data', hwResult && hwResult.readings.temperatureC === 28.5);
+
+      // ==========================================
+      // SECTION 11: Category C (Smart Systems 25-36)
+      // ==========================================
+      const s11 = createSection('11. Category C: Smart Systems Engines (Projects 25–36)');
+      runAssertion(s11, 'Project 25: ParkingSim bay geometry & sonar initialized', typeof ParkingSim !== 'undefined' && Array.isArray(ParkingSim.bays) && ParkingSim.bays.length === 4);
+      runAssertion(s11, 'Project 26: RFIDSim card database & reader initialized', typeof RFIDSim !== 'undefined' && typeof RFIDSim.scanCard === 'function');
+      runAssertion(s11, 'Project 27: DoorSim solenoid & keypad unlock cycle ready', typeof DoorSim !== 'undefined' && typeof DoorSim.unlock === 'function');
+      runAssertion(s11, 'Project 28: DustbinSim lid servo & ultrasonic fill depth', typeof DustbinSim !== 'undefined' && typeof DustbinSim.triggerProximity === 'function');
+      runAssertion(s11, 'Project 29: SmokeSim fire & gas ppm telemetry loop', typeof SmokeSim !== 'undefined' && typeof SmokeSim.setSmokePpm === 'function');
+      runAssertion(s11, 'Project 30: IntrusionSim PIR motion & siren state machine', typeof IntrusionSim !== 'undefined' && typeof IntrusionSim.triggerMotion === 'function');
+      runAssertion(s11, 'Project 31: VisitorSim dual break-beam bidirectional logic', typeof VisitorSim !== 'undefined' && typeof VisitorSim.triggerEntrance === 'function');
+      runAssertion(s11, 'Project 32: EnergySim PZEM power calculation (V x I x PF)', typeof EnergySim !== 'undefined' && typeof EnergySim.setLoad === 'function');
+      runAssertion(s11, 'Project 33: BatterySim voltage divider ADC mapping & DoD curve', typeof BatterySim !== 'undefined' && typeof BatterySim.setVoltage === 'function');
+      runAssertion(s11, 'Project 34: SolarSim INA219 irradiance telemetry model', typeof SolarSim !== 'undefined' && typeof SolarSim.setIrradiance === 'function');
+      runAssertion(s11, 'Project 35: OledSim SSD1306 128x64 display buffer & marquee', typeof OledSim !== 'undefined' && typeof OledSim.setMessage === 'function');
+      runAssertion(s11, 'Project 36: RoomSim LD2410 mmWave presence & micro-motion zones', typeof RoomSim !== 'undefined' && typeof RoomSim.setPresence === 'function');
+    }
+
+    document.getElementById('btn-rerun').addEventListener('click', runAllTests);
+    document.addEventListener('DOMContentLoaded', runAllTests);
+  </script>
+</body>
+</html>

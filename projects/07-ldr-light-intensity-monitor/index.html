@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDR Light Intensity Monitor — Tech IoT Warriors</title>
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-light-intensity">
+
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Return to Launcher">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </a>
+        <div>
+          <div>Project 07 &middot; LDR Light Intensity Monitor</div>
+          <div class="brand-subtitle">CdS Photoresistor &middot; Photometric Divider &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch to another sensor (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn">Hardware</button>
+        </div>
+        <div id="sensor-health-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span>Active</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-setup-modal" title="Wiring & Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero Header Banner -->
+    <div class="hero-banner">
+      <div class="hero-banner-main">
+        <div class="hero-project-badge">☀️</div>
+        <div class="hero-title-group">
+          <h1>Photometric Radiometer &amp; Solar Sensor</h1>
+          <p>
+            <span>Cadmium-Sulfide (CdS) Photoresistor</span>
+            <span>&bull;</span>
+            <span>10k&Omega; Voltage Divider Circuit &bull; ESP8266 ADC A0</span>
+            <span>&bull;</span>
+            <span style="font-family: var(--font-mono); font-weight: 600;">Full Dynamic Range: 0.1 to 100,000 Lux</span>
+          </p>
+        </div>
+      </div>
+      <div class="hero-metrics-pill">
+        <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Illumination Tier</span>
+        <div style="margin-top: 4px;">
+          <span id="ambient-tier-pill" class="status-pill status-ok">Indoor Office</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Instrument Showcase Stage -->
+    <section class="ldr-stage-card">
+      <!-- Celestial Sky Dome Visualizer -->
+      <div id="sun-visualizer-container" class="sun-visualizer-container">
+        <!-- Central Celestial Sun Orb -->
+        <div class="sun-orb-wrapper">
+          <div id="sun-corona" class="sun-corona"></div>
+          <svg id="sun-rays" class="sun-rays" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="3" fill="#eab308" />
+            <line x1="50" y1="5" x2="50" y2="18" stroke="#eab308" stroke-width="3" stroke-linecap="round" />
+            <line x1="50" y1="82" x2="50" y2="95" stroke="#eab308" stroke-width="3" stroke-linecap="round" />
+            <line x1="5" y1="50" x2="18" y2="50" stroke="#eab308" stroke-width="3" stroke-linecap="round" />
+            <line x1="82" y1="50" x2="95" y2="50" stroke="#eab308" stroke-width="3" stroke-linecap="round" />
+            <line x1="18" y1="18" x2="28" y2="28" stroke="#eab308" stroke-width="3" stroke-linecap="round" />
+            <line x1="72" y1="72" x2="82" y2="82" stroke="#eab308" stroke-width="3" stroke-linecap="round" />
+            <line x1="18" y1="82" x2="28" y2="72" stroke="#eab308" stroke-width="3" stroke-linecap="round" />
+            <line x1="72" y1="28" x2="82" y2="18" stroke="#eab308" stroke-width="3" stroke-linecap="round" />
+          </svg>
+          <div id="sun-core" class="sun-core"></div>
+        </div>
+
+        <div id="sun-info-badge" class="sun-info-badge">Indoor Lighting (55% Intensity)</div>
+      </div>
+
+      <!-- Editorial Photometric Panel -->
+      <div class="ldr-editorial-panel">
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Relative Luminous Flux</span>
+          <div class="ldr-main-metric">
+            <span id="primary-light-value" class="ldr-large-num">--</span>
+            <span style="font-size: 1.8rem; font-weight: 600; color: var(--text-muted);">%</span>
+          </div>
+        </div>
+
+        <!-- Lux Logarithmic Spectrum Bar -->
+        <div class="lux-scale-ruler">
+          <div class="lux-milestones">
+            <span>0 lx (Pitch Dark)</span>
+            <span>~50 lx (Dim)</span>
+            <span>~500 lx (Office)</span>
+            <span>10,000+ lx (Sunlight)</span>
+          </div>
+          <div class="lux-bar-track">
+            <div id="lux-indicator" class="lux-bar-indicator" style="left: 55%;"></div>
+          </div>
+        </div>
+
+        <!-- Telemetry Strip -->
+        <div style="display: flex; flex-wrap: wrap; gap: 24px; padding: 14px 0; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);">
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Calibrated Lux (Empirical)</div>
+            <div id="stat-approx-lux" style="margin-top: 4px; font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+              --
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Raw ADC (A0 10-Bit)</div>
+            <div id="stat-raw-adc" style="margin-top: 4px; font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
+              --
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Sensor Validity</div>
+            <div style="margin-top: 4px;">
+              <span id="reading-validity-pill" class="status-pill status-ok">Reading Valid</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Last Reading</div>
+            <div id="last-updated-text" style="margin-top: 4px; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
+              --:--:--
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+          <strong>Scientific Principle:</strong> Photons incident upon the CdS semiconductor track generate free electron-hole pairs, reducing cell resistance from ~1M&Omega; (dark) to &lt;1k&Omega; (bright light).
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-time Chart Card -->
+    <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+        <span class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          Luminous Intensity Historical Trend (%)
+        </span>
+        <button id="btn-export-csv" class="btn btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export CSV
+        </button>
+      </div>
+      <div class="chart-container" style="height: 220px;">
+        <canvas id="ldr-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Compact Instrument Control Deck -->
+    <div class="instrument-deck" style="margin-top: 24px;">
+      <!-- Simulation Controls Panel -->
+      <div id="sim-controls-panel" style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em;">Photometric Simulation Engine</span>
+          <span class="postal-badge">Virtual Photocell</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label" for="sim-scenario-select">Illumination Scenario</label>
+            <select id="sim-scenario-select" class="input-field">
+              <option value="pitch_dark">Pitch Black Night (0–5% / &lt;1 lx)</option>
+              <option value="dim">Dim Bedroom / Corridor (15–30% / ~50 lx)</option>
+              <option value="indoor" selected>Indoor Office Desk (50–65% / ~500 lx)</option>
+              <option value="bright">Direct Daylight Sun (85–100% / 10k+ lx)</option>
+              <option value="fault">LDR Short / Floating Analog Pin</option>
+            </select>
+          </div>
+
+          <div class="slider-control" style="margin-bottom: 0;">
+            <div class="slider-header" style="margin-bottom: 4px;">
+              <span class="input-label" style="margin-bottom: 0;">Manual Intensity Slider</span>
+              <span id="slider-val-label" style="font-family: var(--font-mono); font-weight: 600; font-size: 0.8rem;">55%</span>
+            </div>
+            <input type="range" id="light-override-slider" class="range-input" min="0" max="100" step="1" value="55">
+          </div>
+
+          <div class="input-group" style="margin-bottom: 0;">
+            <label class="input-label" for="sim-speed-select">Simulation Speed</label>
+            <select id="sim-speed-select" class="input-field">
+              <option value="0.5">0.5x (Slow)</option>
+              <option value="1.0" selected>1.0x (Real-time)</option>
+              <option value="2.0">2.0x (Fast)</option>
+              <option value="5.0">5.0x (High-speed)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-sim-start" class="btn btn-sm btn-primary" style="flex: 1;">Resume</button>
+            <button id="btn-sim-pause" class="btn btn-sm" style="flex: 1;">Pause</button>
+            <button id="btn-sim-reset" class="btn btn-sm btn-subtle">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Controls Panel -->
+      <div id="hw-controls-panel" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); text-transform: uppercase;">ESP8266 REST Hardware Link</span>
+          <span class="postal-badge">Physical Sensor</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; align-items: center;">
+          <input type="text" id="hw-device-ip" class="input-field" value="http://192.168.4.1" placeholder="http://192.168.4.1">
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-test-hw" class="btn btn-sm" style="flex: 1;">Test</button>
+            <button id="btn-connect-hw" class="btn btn-sm btn-primary" style="flex: 1;">Connect</button>
+            <button id="btn-disconnect-hw" class="btn btn-sm btn-subtle">Cut</button>
+          </div>
+          <div id="hw-test-result" style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted); text-align: right;">
+            Ready to link.
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnostics Footer Bar -->
+      <div class="diagnostics-bar" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-light);">
+        <div>Diagnostics: <span id="diagnostics-msg" style="color: var(--text-main); font-weight: 600;">Photocell Calibrated &bull; Active</span></div>
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">CdS Photoresistor &bull; ESP8266 ADC A0</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-setup-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">CdS Photoresistor Hardware Setup</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+        <h4 style="color: var(--text-main); margin-bottom: 8px;">1. Voltage Divider Circuit:</h4>
+        <ul style="margin-left: 20px; margin-bottom: 14px;">
+          <li>Connect one leg of the LDR to <strong>3.3V</strong>.</li>
+          <li>Connect other leg of LDR to ESP8266 <strong>A0 (Analog Input)</strong>.</li>
+          <li>Connect a <strong>10k&Omega; pull-down resistor</strong> between A0 and <strong>GND</strong>.</li>
+        </ul>
+        <h4 style="color: var(--text-main); margin-bottom: 8px;">2. Firmware Configuration:</h4>
+        <ol style="margin-left: 20px; margin-bottom: 14px;">
+          <li>Open <code>firmware/ldr_light_intensity_monitor.ino</code> in Arduino IDE.</li>
+          <li>Set your Wi-Fi SSID and Password.</li>
+          <li>Flash to ESP8266 NodeMCU at 115200 baud.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/chart-utils.js"></script>
+  <script src="../../shared/js/simulation-utils.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="config/config.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/hardware.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

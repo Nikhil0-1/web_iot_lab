@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battery Voltage Monitor — Tech IoT Warriors</title>
+  <meta name="description" content="Precision DC battery pack voltage telemetry, discharge curve analysis, and low-voltage protection cutoff.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-battery-monitor">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 33 &middot; Battery Voltage Monitor</div>
+          <div class="brand-subtitle">Precision ADC Resistor Divider &middot; Chemistry Curves &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Animated Battery Cell Visual & Telemetry Chart -->
+    <div class="left-panel">
+      <!-- Animated Battery Cell Stage -->
+      <div class="card battery-cell-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Cell Potential &amp; Charge Density</span>
+            <div class="meta-text" id="chem-subtitle">Chemistry: 12V Lead-Acid &middot; Cutoff: 10.5V &middot; Max: 13.8V</div>
+          </div>
+          <span class="badge" id="battery-status-badge" style="background:#dcfce7;color:#15803d;">Healthy</span>
+        </div>
+
+        <div class="battery-visual-stage">
+          <!-- Realistic Cylindrical Battery Graphic -->
+          <div class="battery-graphic-enclosure">
+            <div class="battery-terminal-top"></div>
+            <div class="battery-canister">
+              <div class="battery-charge-fill" id="battery-charge-fill" style="height:78%;">
+                <div class="battery-bubbles"></div>
+              </div>
+              <div class="battery-overlay-text">
+                <span class="charge-pct" id="graphic-pct">78%</span>
+                <span class="charge-volts" id="graphic-volts">12.42 V</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stability & Discharge Profile -->
+          <div class="battery-profile-pane">
+            <div class="profile-stat-item">
+              <span class="stat-lbl">Terminal Voltage</span>
+              <span class="stat-val" id="val-vterm">12.42 V</span>
+            </div>
+            <div class="profile-stat-item">
+              <span class="stat-lbl">Voltage Stability</span>
+              <span class="stat-val" id="val-stability" style="color:#059669;">Stable (&plusmn;0.02V)</span>
+            </div>
+            <div class="profile-stat-item">
+              <span class="stat-lbl">Raw ADC Reading</span>
+              <span class="stat-val" id="val-raw-adc">842 / 1023</span>
+            </div>
+            <div class="profile-stat-item">
+              <span class="stat-lbl">Divider Factor</span>
+              <span class="stat-val" id="val-divider-ratio">4.18 &times;</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Scenarios -->
+        <div class="scenario-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Discharge States:</span>
+          <button class="btn btn-sm btn-subtle" onclick="setChargeLevel(95)">Full Charge (13.6V)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setChargeLevel(55)">Nominal (12.2V)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setChargeLevel(18)">Low Cutoff Warning (10.8V)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setChargeLevel(5)">Critically Depleted (9.8V)</button>
+        </div>
+      </div>
+
+      <!-- Voltage History Chart Card -->
+      <div class="card">
+        <span class="card-title">Voltage Trend Over Time</span>
+        <div class="chart-wrap" style="background:#09090b;border-radius:var(--radius-md);margin-top:12px;overflow:hidden;">
+          <canvas id="voltage-chart-canvas" width="680" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Chemistry Config, Calibration & Hardware Link -->
+    <div class="right-panel">
+      <!-- Battery Chemistry Configuration -->
+      <div class="card">
+        <span class="card-title">Battery Profile Configuration</span>
+        <div style="margin-top:12px;">
+          <label class="form-label" for="chem-select">Battery Chemistry Model</label>
+          <select id="chem-select" class="text-input" onchange="changeChemistry(this.value)">
+            <option value="lead-acid" selected>12V Lead-Acid (10.5V - 13.8V)</option>
+            <option value="li-ion-1s">1S 18650 Li-Ion (3.0V - 4.2V)</option>
+            <option value="li-ion-3s">3S Li-Ion Pack (9.0V - 12.6V)</option>
+            <option value="lifepo4-4s">4S LiFePO4 Pack (10.0V - 14.4V)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Hardware Link Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 ADC Interface</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Overvoltage Protection Caveat -->
+      <div class="card" style="border-left:4px solid #059669;background:#f0fdf4;">
+        <span class="card-title" style="font-size:0.85rem;color:#065f46;">ADC Voltage Protection Notice</span>
+        <p style="font-size:0.8rem;color:#166534;line-height:1.5;margin-top:4px;">
+          NodeMCU A0 input is rated for 3.3V maximum. Always choose precision 1% metal-film resistors with ratio $R_2 / (R_1 + R_2)$ sized so that maximum charging voltage never exceeds 3.0V at the pin.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 33: Battery Monitor</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, 100kΩ and 10kΩ 1% Precision Metal Film Resistors, 100nF Ceramic Capacitor.</p>
+        <p><strong>Voltage Divider Schematic:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>Battery (+) &rarr; 100kΩ Resistor &rarr; NodeMCU A0 Pin</li>
+          <li>NodeMCU A0 Pin &rarr; 10kΩ Resistor &rarr; Battery (-) Common GND</li>
+          <li>A0 to GND: Connect 100nF capacitor in parallel with 10kΩ to filter high-frequency ADC noise.</li>
+          <li>Divider Ratio: 10k / (100k + 10k) = 1/11 (Max safe voltage: 3.3V &times; 11 = 36.3V).</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/battery_monitor.ino</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

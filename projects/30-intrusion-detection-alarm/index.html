@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intrusion Detection Alarm — Tech IoT Warriors</title>
+  <meta name="description" content="Perimeter security and multi-zone PIR intrusion detection system with armed state telemetry.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-intrusion-alarm">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 30 &middot; Intrusion Detection Alarm</div>
+          <div class="brand-subtitle">PIR Motion Zones &middot; Perimeter Defense Siren &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Security Zone Floorplan -->
+    <div class="left-panel">
+      <!-- Arm/Disarm Control Bar -->
+      <div class="card security-control-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Perimeter Security Control</span>
+            <div class="meta-text" id="sec-sub">Zone Status: Armed &middot; HC-SR501 Sensor Active</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-primary" id="arm-btn" onclick="toggleArmedState()">Disarm System</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floorplan Motion Canvas -->
+      <div class="card floorplan-card">
+        <div class="card-header-row">
+          <span class="card-title">Zone Layout &amp; Passive Infrared Beam</span>
+          <span class="badge" id="siren-status-badge" style="background:#ecfdf5;color:#059669;">Siren Standby</span>
+        </div>
+
+        <div class="floorplan-canvas-wrap">
+          <canvas id="floorplan-canvas" width="680" height="300"></canvas>
+          <div class="siren-strobe-lamp" id="siren-strobe"></div>
+        </div>
+
+        <!-- Simulation Scenario Bar -->
+        <div class="scenario-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Simulate Intrusion:</span>
+          <button class="btn btn-sm btn-subtle" onclick="triggerIntrusion('Zone 1 (Main Entrance)')">Enter Zone 1</button>
+          <button class="btn btn-sm btn-subtle" onclick="triggerIntrusion('Zone 2 (Living Quarters)')">Enter Zone 2</button>
+          <button class="btn btn-sm btn-subtle" onclick="triggerIntrusion('Zone 3 (Perimeter Window)')">Enter Zone 3</button>
+          <button class="btn btn-sm btn-subtle" onclick="clearIntrusion()">Clear Motion</button>
+        </div>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="metric-row">
+        <div class="metric-box">
+          <span class="metric-label">System State</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-armed-state" style="font-size:1.2rem;color:#ea580c;">ARMED</span>
+          </div>
+          <div class="meta-text">Motion Armed</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Active Motion</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-motion-state" style="font-size:1.2rem;color:#059669;">None</span>
+          </div>
+          <div class="meta-text" id="val-motion-zone">All Zones Clear</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Acoustic Siren</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-siren-state" style="font-size:1.2rem;color:#64748b;">Silent</span>
+          </div>
+          <div class="meta-text">Piezo Driver</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Hardware Link & Breach Logs -->
+    <div class="right-panel">
+      <!-- Hardware Connection Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 Security Node</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Security Breach Timeline -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Security Event Log</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearEventLog()">Clear</button>
+        </div>
+        <div id="event-list" class="event-list" style="max-height:240px;overflow-y:auto;margin-top:10px;">
+          <div class="event-empty">No security breaches logged.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 30: Intrusion Detection Alarm</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, HC-SR501 Passive Infrared Sensor, Piezo Alarm Siren, Status LED.</p>
+        <p><strong>Wiring:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>HC-SR501 VCC &rarr; 5V External Power</li>
+          <li>HC-SR501 GND &rarr; Common GND</li>
+          <li>HC-SR501 OUT &rarr; NodeMCU D5 (GPIO 14) [Outputs 3.3V TTL signal]</li>
+          <li>Piezo Siren &rarr; NodeMCU D1 (GPIO 5) via 2N2222 transistor buffer</li>
+          <li>Arm/Disarm LED &rarr; NodeMCU D2 (GPIO 4) via 220Ω resistor</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/intrusion_alarm.ino</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

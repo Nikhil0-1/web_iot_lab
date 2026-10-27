@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Unit Tests — Project 01 Smart Air Quality Monitor</title>
+  <link rel="stylesheet" href="../../../shared/css/design-system.css">
+  <style>
+    body { padding: 30px; }
+    .test-suite { max-width: 800px; margin: 0 auto; }
+    .test-result { padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 8px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; justify-content: space-between; }
+    .test-pass { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .test-fail { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+  </style>
+</head>
+<body>
+  <div class="test-suite">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+      <h2 style="font-size: 1.4rem;">Project 01: Air Quality Monitor Tests</h2>
+      <a href="../index.html" class="btn btn-sm">Return to Dashboard</a>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <script src="../../../shared/js/utilities.js"></script>
+  <script src="../../../shared/js/simulation-utils.js"></script>
+  <script src="../../../shared/js/networking.js"></script>
+  <script src="../config/config.js"></script>
+  <script src="../js/simulation.js"></script>
+  <script src="../js/hardware.js"></script>
+  <script>
+    const resultsContainer = document.getElementById('results');
+    let passed = 0, failed = 0;
+
+    function assert(name, condition, details = '') {
+      const el = document.createElement('div');
+      if (condition) {
+        passed++;
+        el.className = 'test-result test-pass';
+        el.innerHTML = `<span>✓ ${name}</span><span>PASSED</span>`;
+      } else {
+        failed++;
+        el.className = 'test-result test-fail';
+        el.innerHTML = `<span>✗ ${name} (${details})</span><span>FAILED</span>`;
+      }
+      resultsContainer.appendChild(el);
+    }
+
+    assert('Config loaded with correct Project ID', window.AirQualityConfig && window.AirQualityConfig.projectId === 'smart-air-quality-monitor');
+    assert('Air quality thresholds properly defined', window.AirQualityConfig.thresholds.hazardous > window.AirQualityConfig.thresholds.goodMax);
+
+    const sim = new AirQualitySimulation(window.AirQualityConfig);
+    sim.setScenario('clean');
+    const cleanStep = sim.generateStep('clean', 1);
+    assert('Clean scenario yields valid reading', cleanStep.readings.airQualityIndex <= 50);
+
+    sim.setScenario('hazardous');
+    const hazStep = sim.generateStep('hazardous', 2);
+    assert('Hazardous scenario raises index to Hazardous tier', hazStep.readings.airTier === 'Hazardous' || hazStep.readings.airTier === 'Unhealthy');
+
+    sim.setScenario('fault');
+    const faultStep = sim.generateStep('fault', 3);
+    assert('Fault scenario returns sensorStatus fault', faultStep.sensorStatus === 'fault');
+
+    // Hardware parsing check
+    let parsed = null;
+    const hw = new AirQualityHardware(window.AirQualityConfig, (d) => { parsed = d; });
+    hw.handleData({
+      deviceId: 'esp8266-air-01',
+      projectId: 'smart-air-quality-monitor',
+      timestamp: 1000,
+      sensorStatus: 'ok',
+      readings: { rawAdc: 350, warmupComplete: true }
+    });
+    assert('Hardware adapter computes AQI from raw ADC', parsed && parsed.readings.airQualityIndex > 0);
+    assert('Hardware adapter preserves warmup state', parsed && parsed.readings.warmupComplete === true);
+
+    const summary = document.createElement('div');
+    summary.style.marginTop = '20px';
+    summary.style.fontWeight = '700';
+    summary.textContent = `Completed: ${passed} passed, ${failed} failed.`;
+    resultsContainer.appendChild(summary);
+  </script>
+</body>
+</html>

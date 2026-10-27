@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Room Occupancy — Tech IoT Warriors</title>
+  <meta name="description" content="24GHz mmWave radar human micro-presence sensing, stationary breathing detection, and dwell analytics.">
+  <link rel="stylesheet" href="../../shared/css/design-system.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-room-occupancy">
+
+  <!-- Navigation Header -->
+  <header class="top-nav">
+    <div class="container nav-content">
+      <div class="brand">
+        <a href="../../index.html" class="brand-icon" title="Back to Lab">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <div>
+          <div>Project 36 &middot; Smart Room Occupancy</div>
+          <div class="brand-subtitle">24GHz mmWave Radar &middot; Micro-Motion Dwell Analytics &middot; ESP8266</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-sm btn-subtle" data-open-switcher title="Switch Project (Alt+P)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          Switch Project
+        </button>
+        <div class="mode-toggle">
+          <button id="mode-btn-sim" class="mode-toggle-btn active" onclick="setMode('sim')">Simulation</button>
+          <button id="mode-btn-hw" class="mode-toggle-btn" onclick="setMode('hw')">Hardware</button>
+        </div>
+        <div id="status-pill" class="status-pill status-ok">
+          <span class="pulse-dot"></span><span id="status-text">Simulating</span>
+        </div>
+        <button class="btn btn-sm btn-subtle" data-modal-open="hw-modal" title="Wiring &amp; Firmware Guide">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Setup
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- LEFT PANEL: Smart Room 3D Isometric View & Radar Arcs -->
+    <div class="left-panel">
+      <!-- Radar Room Stage -->
+      <div class="card room-stage-card">
+        <div class="card-header-row">
+          <div>
+            <span class="card-title">Room Floorplan &amp; 24GHz mmWave Presence</span>
+            <div class="meta-text" id="radar-sub">Target: Stationary Human (Breathing / Micro-Motion)</div>
+          </div>
+          <span class="badge" id="presence-badge" style="background:#ede9fe;color:#7c3aed;font-weight:700;">Occupied</span>
+        </div>
+
+        <div class="room-canvas-wrap">
+          <canvas id="room-canvas" width="680" height="280"></canvas>
+          <div class="radar-hud-overlay">
+            <span id="hud-radar-state">Radar: Target Tracked</span>
+            <span id="hud-radar-dist">Distance: 1.8m</span>
+          </div>
+        </div>
+
+        <!-- Simulation Scenarios -->
+        <div class="scenario-bar" id="sim-controls">
+          <span class="meta-text" style="font-weight:600;">Occupancy States:</span>
+          <button class="btn btn-sm btn-subtle" onclick="setOccupancyState('stationary')">Stationary (Desk Work / Breathing)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setOccupancyState('moving')">Active Motion (Walking)</button>
+          <button class="btn btn-sm btn-subtle" onclick="setOccupancyState('vacant')">Vacate Room (Empty)</button>
+        </div>
+      </div>
+
+      <!-- Telemetry Metrics Row -->
+      <div class="metric-row">
+        <div class="metric-box">
+          <span class="metric-label">Presence Status</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-presence-state" style="font-size:1.2rem;color:#7c3aed;">Occupied</span>
+          </div>
+          <div class="meta-text" id="val-presence-type">Stationary Body</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Dwell Duration</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-dwell-time" style="font-size:1.2rem;color:#0284c7;">05:42</span>
+          </div>
+          <div class="meta-text">Continuous Occupancy</div>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Target Range</span>
+          <div class="metric-value-row">
+            <span class="metric-value" id="val-target-range">1.8</span>
+            <span class="metric-unit">m</span>
+          </div>
+          <div class="meta-text">Gate 3 FMCW Distance</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Technical Distinction, Timeline & Hardware Link -->
+    <div class="right-panel">
+      <!-- mmWave vs PIR Distinction Card -->
+      <div class="card" style="border-left:4px solid #8b5cf6;background:#f5f3ff;">
+        <span class="card-title" style="font-size:0.85rem;color:#5b21b6;">mmWave vs PIR Technical Distinction</span>
+        <p style="font-size:0.8rem;color:#4c1d95;line-height:1.5;margin-top:4px;">
+          Traditional PIR sensors turn off when an occupant sits still. 24GHz FMCW millimeter-wave radar detects sub-millimeter chest vibrations from respiration, sustaining accurate room occupancy without false turn-offs.
+        </p>
+      </div>
+
+      <!-- Hardware Link Widget -->
+      <div class="card">
+        <span class="card-title">ESP8266 mmWave Hub</span>
+        <div class="hw-controls-group" style="margin-top:12px;">
+          <label class="form-label" for="hw-ip-input">ESP8266 IP / Hostname</label>
+          <div class="input-with-action">
+            <input type="text" id="hw-ip-input" class="text-input" placeholder="192.168.4.1" value="192.168.4.1">
+            <button class="btn btn-primary" onclick="hwConnect()">Connect</button>
+          </div>
+        </div>
+        <div class="error-msg" id="hw-error-msg" style="display:none;margin-top:10px;"></div>
+        <div class="meta-text" id="hw-last-seen" style="margin-top:10px;">Awaiting connection…</div>
+      </div>
+
+      <!-- Occupancy Timeline -->
+      <div class="card">
+        <div class="card-header-row">
+          <span class="card-title">Presence Activity History</span>
+          <button class="btn btn-sm btn-subtle" onclick="clearActivityLog()">Clear</button>
+        </div>
+        <div id="activity-list" class="event-list" style="max-height:200px;overflow-y:auto;margin-top:10px;">
+          <div class="event-empty">No occupancy events recorded.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hardware Setup Modal -->
+  <div class="modal-overlay" id="hw-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="card-title">Hardware Setup — Project 36: Smart Room Occupancy</h3>
+        <button class="btn btn-sm btn-subtle" data-modal-close>&times;</button>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;">
+        <p><strong>Components:</strong> NodeMCU ESP8266, Hi-Link HLK-LD2410 24GHz Human Presence Radar Sensor, 5V External Supply.</p>
+        <p><strong>UART Serial Pinout:</strong></p>
+        <ul style="margin-left:18px;margin-bottom:10px;">
+          <li>LD2410 VCC &rarr; 5V External Power (Draws 80mA average)</li>
+          <li>LD2410 GND &rarr; Common GND</li>
+          <li>LD2410 TX &rarr; NodeMCU D7 (GPIO 13 / Software RX)</li>
+          <li>LD2410 RX &rarr; NodeMCU D8 (GPIO 15 / Software TX via 1k/2k divider)</li>
+          <li>LD2410 Out (GPIO High on target) &rarr; Optional D5 (GPIO 14)</li>
+        </ul>
+        <p><strong>Firmware:</strong> Flash <code>firmware/room_occupancy.ino</code> with <code>SoftwareSerial</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/js/utilities.js"></script>
+  <script src="../../shared/js/common-ui.js"></script>
+  <script src="../../shared/js/networking.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
