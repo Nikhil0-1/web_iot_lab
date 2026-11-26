@@ -1,4 +1,5 @@
 #include "telemetry.h"
+#include <ESP8266WiFi.h>
 #include "config.h"
 
 TelemetryManager telemetryManager;

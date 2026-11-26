@@ -53,19 +53,25 @@ void WebApiServer::handleRoot() {
                   "<h1>Tech IoT Warriors &middot; Automation Hub (Device 2)</h1>"
                   "<div class='card'>"
                   "<p><strong>Device ID:</strong> esp8266-automation-hub-02</p>"
-                  "<p><strong>Safety State:</strong> <span class='badge'>" + String(safetyManager.getStateString()) + "</span></p>"
-                  "<p><strong>Network:</strong> " + wifiManager.getModeString() + " &bull; IP: " + wifiManager.getIpAddress() + "</p>"
-                  "<p><strong>Supported Projects:</strong> 13 to 24 (Category B: Automation &amp; Actuators)</p>"
-                  "</div>"
-                  "<div class='card'><h3>Active API Endpoints</h3><ul>"
-                  "<li><a href='/api/health'><code>/api/health</code></a> &mdash; Liveness &amp; safety watchdog state</li>"
-                  "<li><a href='/api/device'><code>/api/device</code></a> &mdash; Hardware metadata</li>"
-                  "<li><a href='/api/telemetry'><code>/api/telemetry</code></a> &mdash; Full 12-actuator telemetry snapshot</li>"
-                  "<li><a href='/api/actuators'><code>/api/actuators</code></a> &mdash; Detailed channel status list</li>"
-                  "<li><a href='/api/readings?project=13'><code>/api/readings?project=13</code></a> &mdash; Specific project status</li>"
-                  "<li><code>POST /api/command</code> &mdash; Control relays, PWM, DC motor, stepper, servo</li>"
-                  "</ul></div>"
-                  "</body></html>");
+                  "<p><strong>Safety State:</strong> <span class='badge'>");
+  html += safetyManager.getStateString();
+  html += F("</span></p>"
+            "<p><strong>Network:</strong> ");
+  html += wifiManager.getModeString();
+  html += F(" &bull; IP: ");
+  html += wifiManager.getIpAddress();
+  html += F("</p>"
+            "<p><strong>Supported Projects:</strong> 13 to 24 (Category B: Automation &amp; Actuators)</p>"
+            "</div>"
+            "<div class='card'><h3>Active API Endpoints</h3><ul>"
+            "<li><a href='/api/health'><code>/api/health</code></a> &mdash; Liveness &amp; safety watchdog state</li>"
+            "<li><a href='/api/device'><code>/api/device</code></a> &mdash; Hardware metadata</li>"
+            "<li><a href='/api/telemetry'><code>/api/telemetry</code></a> &mdash; Full 12-actuator telemetry snapshot</li>"
+            "<li><a href='/api/actuators'><code>/api/actuators</code></a> &mdash; Detailed channel status list</li>"
+            "<li><a href='/api/readings?project=13'><code>/api/readings?project=13</code></a> &mdash; Specific project status</li>"
+            "<li><code>POST /api/command</code> &mdash; Control relays, PWM, DC motor, stepper, servo</li>"
+            "</ul></div>"
+            "</body></html>");
   _server.send(200, F("text/html"), html);
 }
 

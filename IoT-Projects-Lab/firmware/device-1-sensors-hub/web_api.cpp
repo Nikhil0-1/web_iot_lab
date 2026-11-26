@@ -58,19 +58,23 @@ void WebApiServer::handleRoot() {
                   "<div class='card'>"
                   "<p><strong>Device ID:</strong> esp8266-sensors-hub-01</p>"
                   "<p><strong>Firmware:</strong> v2.4.0 (Universal Monitoring Engine)</p>"
-                  "<p><strong>Network:</strong> " + wifiManager.getModeString() + " &bull; IP: " + wifiManager.getIpAddress() + "</p>"
-                  "<p><strong>Supported Projects:</strong> 01 to 12 (Category A)</p>"
-                  "</div>"
-                  "<div class='card'><h3>Active API Endpoints</h3><ul>"
-                  "<li><a href='/api/health'><code>/api/health</code></a> &mdash; Liveness check</li>"
-                  "<li><a href='/api/device'><code>/api/device</code></a> &mdash; Hardware metadata</li>"
-                  "<li><a href='/api/telemetry'><code>/api/telemetry</code></a> &mdash; Full 12-project snapshot</li>"
-                  "<li><a href='/api/sensors'><code>/api/sensors</code></a> &mdash; Sensor diagnostic array</li>"
-                  "<li><a href='/api/readings?project=01'><code>/api/readings?project=01</code></a> &mdash; Individual project reading</li>"
-                  "<li><a href='/api/config'><code>/api/config</code></a> &mdash; Calibration parameters</li>"
-                  "</ul></div>"
-                  "<p style='color:#64748b;font-size:0.85em;'>Connect via the web dashboard at <code>IoT-Projects-Lab/index.html</code></p>"
-                  "</body></html>");
+                  "<p><strong>Network:</strong> ");
+  html += wifiManager.getModeString();
+  html += F(" &bull; IP: ");
+  html += wifiManager.getIpAddress();
+  html += F("</p>"
+            "<p><strong>Supported Projects:</strong> 01 to 12 (Category A)</p>"
+            "</div>"
+            "<div class='card'><h3>Active API Endpoints</h3><ul>"
+            "<li><a href='/api/health'><code>/api/health</code></a> &mdash; Liveness check</li>"
+            "<li><a href='/api/device'><code>/api/device</code></a> &mdash; Hardware metadata</li>"
+            "<li><a href='/api/telemetry'><code>/api/telemetry</code></a> &mdash; Full 12-project snapshot</li>"
+            "<li><a href='/api/sensors'><code>/api/sensors</code></a> &mdash; Sensor diagnostic array</li>"
+            "<li><a href='/api/readings?project=01'><code>/api/readings?project=01</code></a> &mdash; Individual project reading</li>"
+            "<li><a href='/api/config'><code>/api/config</code></a> &mdash; Calibration parameters</li>"
+            "</ul></div>"
+            "<p style='color:#64748b;font-size:0.85em;'>Connect via the web dashboard at <code>IoT-Projects-Lab/index.html</code></p>"
+            "</body></html>");
   _server.send(200, F("text/html"), html);
 }
 
