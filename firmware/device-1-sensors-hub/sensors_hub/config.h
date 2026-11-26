@@ -18,8 +18,8 @@
 #define SERIAL_BAUD_RATE    115200
 
 // Wi-Fi Station Credentials (Configure for your network)
-#define DEFAULT_WIFI_SSID   "TechIoT_Lab_2G"
-#define DEFAULT_WIFI_PASS   "IoTLab2026Secure"
+#define DEFAULT_WIFI_SSID   "xyz"
+#define DEFAULT_WIFI_PASS   "22Nikhil558800"
 
 // Access Point Fallback (Activated when station connection fails)
 #define AP_SSID             "TechIoTW_SensorsHub"

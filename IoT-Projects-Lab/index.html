@@ -366,6 +366,115 @@
 
   <!-- Main Content Area -->
   <main class="container">
+    <!-- Physical Hardware Hubs Management Panel -->
+    <section class="card" style="margin-bottom: 32px; padding: 22px; border: 1px solid var(--border-card); background: #ffffff;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+        <div>
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span>🔌</span> Physical Hardware Hubs &amp; Connectivity
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0 0;">
+            Independent ESP8266 microcontroller groups. Configure local network IPs and verify hardware liveness before testing physical sensors and actuators.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-sm btn-subtle" onclick="testAllHardwareHubs()" title="Ping all 3 hardware groups">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            Refresh All Hubs
+          </button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px;">
+        <!-- Device A Card -->
+        <div class="card" style="margin: 0; padding: 16px; background: #fafafa; border: 1px solid var(--border-card); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div>
+                <span class="badge" style="background: rgba(0,245,155,0.15); color: #059669; font-weight: 700; margin-bottom: 4px;">DEVICE A</span>
+                <h3 style="font-size: 1rem; font-weight: 700; margin: 2px 0 0 0; color: var(--text-main);">Sensors Hub</h3>
+              </div>
+              <span id="hub-a-status" class="status-pill status-warn" style="font-size: 0.72rem;">
+                <span class="pulse-dot"></span><span>Unverified</span>
+              </span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 12px 0;">
+              Projects 01–12 &bull; Radar, Climate, Gas, Soil, Water Level &amp; Flow
+            </p>
+
+            <div style="margin-bottom: 10px;">
+              <label class="form-label" style="font-size: 0.75rem;">Device IP / Address</label>
+              <div class="input-with-action" style="margin-top: 4px;">
+                <input type="text" id="hub-a-ip" class="text-input" style="padding: 6px 10px; font-size: 0.85rem;" value="192.168.4.1">
+                <button class="btn btn-sm btn-primary" id="hub-a-btn" onclick="testHubConnection('A')">Test Link</button>
+              </div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 8px; margin-top: 8px; font-size: 0.75rem; color: var(--text-muted);" id="hub-a-meta">
+            Firmware: <code>sensors_hub.ino</code> &bull; Port 80
+          </div>
+        </div>
+
+        <!-- Device B Card -->
+        <div class="card" style="margin: 0; padding: 16px; background: #fafafa; border: 1px solid var(--border-card); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div>
+                <span class="badge" style="background: rgba(37,99,235,0.12); color: #2563eb; font-weight: 700; margin-bottom: 4px;">DEVICE B</span>
+                <h3 style="font-size: 1rem; font-weight: 700; margin: 2px 0 0 0; color: var(--text-main);">Automation Hub</h3>
+              </div>
+              <span id="hub-b-status" class="status-pill status-warn" style="font-size: 0.72rem;">
+                <span class="pulse-dot"></span><span>Unverified</span>
+              </span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 12px 0;">
+              Projects 13–24 &bull; 8-Ch Relays, Motors, Servos, Steppers &amp; PWM
+            </p>
+
+            <div style="margin-bottom: 10px;">
+              <label class="form-label" style="font-size: 0.75rem;">Device IP / Address</label>
+              <div class="input-with-action" style="margin-top: 4px;">
+                <input type="text" id="hub-b-ip" class="text-input" style="padding: 6px 10px; font-size: 0.85rem;" value="192.168.4.2">
+                <button class="btn btn-sm btn-primary" id="hub-b-btn" onclick="testHubConnection('B')">Test Link</button>
+              </div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 8px; margin-top: 8px; font-size: 0.75rem; color: var(--text-muted);" id="hub-b-meta">
+            Firmware: <code>automation_hub.ino</code> &bull; Port 80
+          </div>
+        </div>
+
+        <!-- Device C Card -->
+        <div class="card" style="margin: 0; padding: 16px; background: #fafafa; border: 1px solid var(--border-card); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div>
+                <span class="badge" style="background: rgba(124,58,237,0.12); color: #7c3aed; font-weight: 700; margin-bottom: 4px;">DEVICE C</span>
+                <h3 style="font-size: 1rem; font-weight: 700; margin: 2px 0 0 0; color: var(--text-main);">Smart Systems Hub</h3>
+              </div>
+              <span id="hub-c-status" class="status-pill status-warn" style="font-size: 0.72rem;">
+                <span class="pulse-dot"></span><span>Unverified</span>
+              </span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 12px 0;">
+              Projects 25–36 &bull; OLED Notice Marquee, RFID, PZEM AC, Solar &amp; mmWave
+            </p>
+
+            <div style="margin-bottom: 10px;">
+              <label class="form-label" style="font-size: 0.75rem;">Device IP / Address</label>
+              <div class="input-with-action" style="margin-top: 4px;">
+                <input type="text" id="hub-c-ip" class="text-input" style="padding: 6px 10px; font-size: 0.85rem;" value="192.168.4.3">
+                <button class="btn btn-sm btn-primary" id="hub-c-btn" onclick="testHubConnection('C')">Test Link</button>
+              </div>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--border-subtle); padding-top: 8px; margin-top: 8px; font-size: 0.75rem; color: var(--text-muted);" id="hub-c-meta">
+            Firmware: <code>smart_systems_hub.ino</code> &bull; Port 80
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Filter and Search Bar -->
     <div class="filter-bar">
       <div class="category-pills">
@@ -1885,8 +1994,98 @@
     </div>
   </footer>
 
+  <script src="shared/js/hardware-config.js"></script>
+  <script src="shared/js/networking.js"></script>
   <script src="shared/js/common-ui.js"></script>
   <script>
+    // Hardware Hubs Connectivity Manager
+    function initHardwareHubsUI() {
+      if (typeof UniversalHubManager !== 'undefined') {
+        const ipA = document.getElementById('hub-a-ip');
+        const ipB = document.getElementById('hub-b-ip');
+        const ipC = document.getElementById('hub-c-ip');
+        if (ipA) ipA.value = UniversalHubManager.getDeviceAIp();
+        if (ipB) ipB.value = UniversalHubManager.getDeviceBIp();
+        if (ipC) ipC.value = UniversalHubManager.getDeviceCIp();
+      }
+    }
+
+    async function testHubConnection(group) {
+      const g = group.toUpperCase();
+      const ipInput = document.getElementById(`hub-${g.toLowerCase()}-ip`);
+      const statusPill = document.getElementById(`hub-${g.toLowerCase()}-status`);
+      const btn = document.getElementById(`hub-${g.toLowerCase()}-btn`);
+      const meta = document.getElementById(`hub-${g.toLowerCase()}-meta`);
+
+      const ip = ipInput ? ipInput.value.trim() : '';
+      if (!ip) {
+        if (window.CommonUI) CommonUI.toast(`Enter a valid IP for Device ${g}`, 'warning');
+        return;
+      }
+
+      // Save IP
+      if (typeof UniversalHubManager !== 'undefined') {
+        if (g === 'A') UniversalHubManager.setDeviceAIp(ip);
+        if (g === 'B') UniversalHubManager.setDeviceBIp(ip);
+        if (g === 'C') UniversalHubManager.setDeviceCIp(ip);
+      }
+
+      if (statusPill) {
+        statusPill.className = 'status-pill status-warn';
+        statusPill.innerHTML = '<span class="pulse-dot"></span><span>Connecting…</span>';
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Testing…';
+      }
+      if (meta) {
+        meta.textContent = `Attempting handshake with ${ip}:80…`;
+      }
+
+      const client = new ESP8266Client({
+        baseUrl: ip,
+        timeoutMs: 3500
+      });
+
+      const res = await client.testConnection();
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Test Link';
+      }
+
+      if (res.success) {
+        const dev = res.device || {};
+        const h = res.health || {};
+        if (statusPill) {
+          statusPill.className = 'status-pill status-ok';
+          statusPill.innerHTML = '<span class="pulse-dot"></span><span>Online</span>';
+        }
+        if (meta) {
+          meta.innerHTML = `<strong>${dev.deviceId || 'ESP8266'}</strong> &bull; v${dev.firmwareVersion || '1.0'} &bull; Heap: ${h.free_heap || h.freeHeap || '--'}B &bull; Verified: ${new Date().toLocaleTimeString()}`;
+        }
+        if (window.CommonUI) CommonUI.toast(`Device ${g} verified online at ${ip}!`, 'success');
+      } else {
+        if (statusPill) {
+          statusPill.className = 'status-pill status-danger';
+          statusPill.innerHTML = '<span class="pulse-dot"></span><span>Offline</span>';
+        }
+        if (meta) {
+          meta.innerHTML = `<span style="color:#e11d48;">Error: ${res.error || 'Connection failed'}</span>`;
+        }
+        if (window.CommonUI) CommonUI.toast(`Device ${g} connection failed: ${res.error}`, 'error');
+      }
+    }
+
+    function testAllHardwareHubs() {
+      testHubConnection('A');
+      testHubConnection('B');
+      testHubConnection('C');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initHardwareHubsUI();
+    });
     // Search and Filter Logic
     const searchInput = document.getElementById('project-search');
     const filterPills = document.querySelectorAll('.category-pill');

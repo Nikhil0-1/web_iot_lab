@@ -18,7 +18,8 @@ void WebApiServer::update() {
 void WebApiServer::sendCorsHeaders() {
   _server.sendHeader(F("Access-Control-Allow-Origin"), F("*"));
   _server.sendHeader(F("Access-Control-Allow-Methods"), F("GET, POST, OPTIONS"));
-  _server.sendHeader(F("Access-Control-Allow-Headers"), F("Content-Type, Authorization"));
+  _server.sendHeader(F("Access-Control-Allow-Headers"), F("Content-Type, Accept, Authorization, X-Requested-With"));
+  _server.sendHeader(F("Access-Control-Allow-Private-Network"), F("true"));
 }
 
 void WebApiServer::handleOptions() {

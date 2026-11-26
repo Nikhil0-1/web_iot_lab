@@ -8,6 +8,11 @@ Thumbs.db
 *.hex
 *.elf
 
+# Dependencies & Python cache
+node_modules/
+__pycache__/
+*.pyc
+
 # Logs & temporary data
 *.log
 scratch/
